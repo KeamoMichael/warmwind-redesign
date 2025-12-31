@@ -1,8 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(API_KEY);
-
 export interface AgentResult {
     intent: "conversational" | "agentic";
     message: string;
@@ -48,14 +45,20 @@ Response: {
 `;
 
 export async function processUserMessage(message: string): Promise<AgentResult> {
-    if (!API_KEY) {
-        console.error("VITE_GEMINI_API_KEY is not defined");
-        return { intent: "conversational", message: "API Key not configured." };
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+    if (!apiKey) {
+        console.error("VITE_GEMINI_API_KEY is not defined in environment variables");
+        return {
+            intent: "conversational",
+            message: "Intelligence Error: API Key not found. Please ensure VITE_GEMINI_API_KEY is set in your .env.local file or deployment settings."
+        };
     }
 
     try {
+        const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: "gemini-1.5-flash-latest",
             generationConfig: { responseMimeType: "application/json" }
         });
 
@@ -66,6 +69,6 @@ export async function processUserMessage(message: string): Promise<AgentResult> 
         return JSON.parse(text) as AgentResult;
     } catch (error) {
         console.error("Gemini API Error:", error);
-        return { intent: "conversational", message: "Sorry, I encountered an error processing your request." };
+        return { intent: "conversational", message: "Sorry, I encountered an error communicating with Gemini. Please check your network or API permissions." };
     }
 }
