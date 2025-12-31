@@ -175,6 +175,14 @@ const TopIsland: React.FC<{
             </div>
           )}
           <motion.div
+            ref={(el) => {
+              if (el instanceof HTMLElement) {
+                registerElement(`dock-icon-App Store`, el, {
+                  type: 'button',
+                  onFocus: onOpenAppStore // Optional direct invoke
+                });
+              }
+            }}
             initial={{ scale: 1, opacity: 0 }}
             animate={{ scale: showPlusButton ? 1 : 1, opacity: showPlusButton ? 1 : 0 }}
             transition={{ opacity: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } }}

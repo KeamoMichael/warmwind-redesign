@@ -217,8 +217,41 @@ const AppContent: React.FC = () => {
           default:
             // UNIVERSAL PHYSICAL HANDLER
             await openAppPhysically(app);
+
+            // CHAINED MISSION: Chrome Search
+            if (app === "Chrome" && result.action.query) {
+              // 5. Locate Omnibox (Add to steps)
+              const query = result.action.query;
+              setAgentSteps(prev => [...prev, "Locating Omnibox..."]);
+              setActiveStepIndex(prev => prev + 1);
+              await new Promise(r => setTimeout(r, 600));
+
+              // 6. Click Omnibox
+              setAgentSteps(prev => [...prev, "Clicking Omnibox..."]);
+              setActiveStepIndex(prev => prev + 1);
+              setAgentStatus("clicking");
+              await executeAction({ type: 'click', targetId: 'chrome-omnibox' });
+
+              // 7. Type Query
+              setAgentSteps(prev => [...prev, `Typing "${query}"...`]);
+              setActiveStepIndex(prev => prev + 1);
+              setAgentStatus("keyboard");
+              await executeAction({ type: 'type', targetId: 'chrome-omnibox', text: query });
+
+              // 8. Submit (Simulated wait)
+              setAgentSteps(prev => [...prev, "Searching..."]);
+              setActiveStepIndex(prev => prev + 1);
+              setAgentStatus("thinking");
+              await new Promise(r => setTimeout(r, 1500));
+            }
             break;
         }
+
+        // Action Completed
+        setAgentStatus(null);
+        setIsResponding(false);
+        setMessages(prev => [...prev, { role: 'assistant', content: `✅ Action Completed` }]);
+        return; // Skip cycleSteps for physical actions
       }
 
       setActiveStepIndex(0);
