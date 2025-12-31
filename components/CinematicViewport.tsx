@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChromeWindow } from './ChromeWindow';
 import { AppStore } from './AppStore';
+import AgentCursor from './AgentCursor';
 
 interface CinematicViewportProps {
   isResponding: boolean;
@@ -10,6 +11,8 @@ interface CinematicViewportProps {
   activeStepIndex: number; // -1 = show message, 0+ = show steps
   isAgenticMode: boolean;
   isBooting: boolean; // Prop to control the startup reveal
+  agentStatus?: "thinking" | "keyboard" | "clicking" | null;
+  cursorPosition?: { x: number; y: number };
 }
 
 const WelcomeText: React.FC = () => {
@@ -242,7 +245,9 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   agentSteps,
   activeStepIndex,
   isAgenticMode,
-  isBooting
+  isBooting,
+  agentStatus,
+  cursorPosition
 }) => {
   const isAgenticState = activeStepIndex >= 0;
   const [openApps, setOpenApps] = React.useState<string[]>([]);
@@ -418,6 +423,13 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Agent Feedback: Pulsing Red Cursor */}
+      <AgentCursor
+        x={cursorPosition?.x ?? 0}
+        y={cursorPosition?.y ?? 0}
+        isVisible={!!isResponding && agentStatus === 'clicking'}
+      />
     </div>
   );
 };

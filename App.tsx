@@ -9,6 +9,8 @@ const App: React.FC = () => {
   const [activeStepIndex, setActiveStepIndex] = React.useState(-1);
   const [isAgenticMode, setIsAgenticMode] = React.useState(false);
   const [isBooting, setIsBooting] = React.useState(true);
+  const [agentStatus, setAgentStatus] = React.useState<"thinking" | "keyboard" | "clicking" | null>(null);
+  const [cursorPosition, setCursorPosition] = React.useState<{ x: number, y: number }>({ x: 0, y: 0 });
   const responseTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
@@ -33,6 +35,7 @@ const App: React.FC = () => {
     if (!message.trim()) return;
 
     setIsResponding(true);
+    setAgentStatus("thinking");
     setAssistantMessage(`Let me search the ${message} for you.`);
     setAgentSteps(["Open Browser", `Search ${message}`, "Read Results", "Synthesize Data"]);
     setActiveStepIndex(-1); // -1 means initial message state
@@ -43,16 +46,31 @@ const App: React.FC = () => {
     // Initial message shows for 2 seconds
     responseTimeoutRef.current = setTimeout(() => {
       setActiveStepIndex(0);
+      setAgentStatus("keyboard");
 
       // Cycle through steps every 1.5 seconds
       const cycleSteps = (index: number) => {
         if (index < 4) {
           responseTimeoutRef.current = setTimeout(() => {
             setActiveStepIndex(index + 1);
+
+            // Simulate agent feedback states
+            if (index === 0) {
+              setAgentStatus("clicking");
+              setCursorPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 - 100 });
+            } else if (index === 1) {
+              setAgentStatus("thinking");
+            } else if (index === 2) {
+              setAgentStatus("keyboard");
+            } else {
+              setAgentStatus(null);
+            }
+
             cycleSteps(index + 1);
           }, 1500);
         } else {
           setIsResponding(false);
+          setAgentStatus(null);
         }
       };
 
@@ -65,6 +83,7 @@ const App: React.FC = () => {
     setActiveStepIndex(-1);
     setAgentSteps([]);
     setIsAgenticMode(false);
+    setAgentStatus(null);
     if (responseTimeoutRef.current) {
       clearTimeout(responseTimeoutRef.current);
       responseTimeoutRef.current = null;
@@ -82,6 +101,8 @@ const App: React.FC = () => {
           activeStepIndex={activeStepIndex}
           isAgenticMode={isAgenticMode}
           isBooting={isBooting}
+          agentStatus={agentStatus}
+          cursorPosition={cursorPosition}
         />
       </section>
 
@@ -92,6 +113,7 @@ const App: React.FC = () => {
           isResponding={isResponding}
           onStop={handleStop}
           isBooting={isBooting}
+          agentStatus={agentStatus}
         />
       </section>
     </main>

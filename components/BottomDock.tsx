@@ -8,9 +8,10 @@ interface BottomDockProps {
   isResponding: boolean;
   onStop: () => void;
   isBooting: boolean; // Add isBooting prop
+  agentStatus?: "thinking" | "keyboard" | "clicking" | null;
 }
 
-const BottomDock: React.FC<BottomDockProps> = ({ onSendMessage, isResponding, onStop, isBooting }) => {
+const BottomDock: React.FC<BottomDockProps> = ({ onSendMessage, isResponding, onStop, isBooting, agentStatus }) => {
   return (
     <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center">
       {/* Left Area: Empty */}
@@ -37,6 +38,7 @@ const BottomDock: React.FC<BottomDockProps> = ({ onSendMessage, isResponding, on
           isResponding={isResponding}
           onStop={onStop}
           isBooting={isBooting}
+          agentStatus={agentStatus}
         />
       </motion.div>
 

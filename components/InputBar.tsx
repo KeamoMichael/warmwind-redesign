@@ -7,9 +7,10 @@ interface InputBarProps {
   isResponding: boolean;
   onStop: () => void;
   isBooting: boolean;
+  agentStatus?: "thinking" | "keyboard" | "clicking" | null;
 }
 
-const InputBar: React.FC<InputBarProps> = ({ onSendMessage, isResponding, onStop, isBooting }) => {
+const InputBar: React.FC<InputBarProps> = ({ onSendMessage, isResponding, onStop, isBooting, agentStatus }) => {
   const [inputValue, setInputValue] = React.useState("");
 
   const handleSend = () => {
@@ -55,21 +56,44 @@ const InputBar: React.FC<InputBarProps> = ({ onSendMessage, isResponding, onStop
     >
       <div className="flex-1 flex items-center h-full relative">
         {isResponding ? (
-          <div className="flex items-center text-neutral-400 font-light text-[15px] select-none">
-            Thinking
-            <div className="flex ml-1 gap-0.5">
-              {[0, 1, 2].map((i) => (
-                <motion.span
-                  key={i}
-                  custom={i}
-                  variants={dotVariants}
-                  initial="initial"
-                  animate="animate"
-                >
-                  .
-                </motion.span>
-              ))}
+          <div className="flex items-center justify-between w-full pr-4">
+            <div className="flex items-center text-neutral-400 font-light text-[15px] select-none">
+              {agentStatus === "keyboard" ? "Using Keyboard" :
+                agentStatus === "clicking" ? "Clicking Element" : "Thinking"}
+              {agentStatus === "clicking" || agentStatus === "keyboard" || !agentStatus ? (
+                <div className="flex ml-1 gap-0.5">
+                  {(!agentStatus || agentStatus === "thinking") && [0, 1, 2].map((i) => (
+                    <motion.span
+                      key={i}
+                      custom={i}
+                      variants={dotVariants}
+                      initial="initial"
+                      animate="animate"
+                    >
+                      .
+                    </motion.span>
+                  ))}
+                </div>
+              ) : null}
             </div>
+
+            {/* Status Icons */}
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-neutral-400"
+            >
+              {agentStatus === "keyboard" && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="4" width="20" height="16" rx="2" /><path d="M6 8h.01" /><path d="M10 8h.01" /><path d="M14 8h.01" /><path d="M18 8h.01" /><path d="M8 12h.01" /><path d="M12 12h.01" /><path d="M16 12h.01" /><path d="M7 16h10" />
+                </svg>
+              )}
+              {agentStatus === "clicking" && (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z" /><path d="m13 13 6 6" />
+                </svg>
+              )}
+            </motion.div>
           </div>
         ) : (
           <input
