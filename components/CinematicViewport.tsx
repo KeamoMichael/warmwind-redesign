@@ -273,7 +273,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
     <div className="relative w-full h-full rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm">
       {/* Background Image */}
       <img
-        src="/assets/Wallpaper.jpg"
+        src="/assets/Wallpaper For OS.jpg"
         alt="OS Wallpaper"
         className="w-full h-full object-cover select-none pointer-events-none"
       />

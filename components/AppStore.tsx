@@ -33,13 +33,8 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall }) => {
         >
             {/* Window Title Bar - Extremely Glassy */}
             <div className="h-11 bg-white/10 backdrop-blur-3xl flex items-center justify-between px-5 shrink-0 border-b border-white/5">
-                {/* Left: App Store Logo & Title */}
+                {/* Left: App Store Title Only */}
                 <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 bg-blue-500 rounded-md flex items-center justify-center p-1 shadow-lg shadow-blue-500/20">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 17V3m0 14-4-4m4 4 4-4" />
-                        </svg>
-                    </div>
                     <span className="text-[14px] text-white/90 font-medium tracking-tight">App Store</span>
                 </div>
 
