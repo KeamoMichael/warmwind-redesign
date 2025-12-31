@@ -318,14 +318,14 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
               <motion.div
                 key={appName}
                 layout
-                initial={{ opacity: 0, scale: 0.8, x: -200 }}
+                initial={{ opacity: 0, scale: 0.8 }}
                 animate={{
                   opacity: 1,
                   scale: 1,
                   x: 0,
                   zIndex: 20 - index,
                 }}
-                exit={{ opacity: 0, scale: 0.8, x: 200 }}
+                exit={{ opacity: 0, scale: 0.8 }}
                 transition={{
                   duration: 0.6,
                   ease: [0.16, 1, 0.3, 1],

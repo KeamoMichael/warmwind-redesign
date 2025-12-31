@@ -292,16 +292,6 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
                     </div>
                 </div>
 
-                {/* Customize Button */}
-                <div className="absolute bottom-6 right-6">
-                    <button className="px-5 py-2 bg-white border border-neutral-300 hover:shadow-md rounded-full flex items-center gap-2 transition-shadow">
-                        <svg width="16" height="16" viewBox="0 0 16 16">
-                            <circle cx="8" cy="8" r="6" stroke="#5f6368" strokeWidth="1.5" fill="none" />
-                            <path d="M8 5 V11 M5 8 H11" stroke="#5f6368" strokeWidth="1.5" />
-                        </svg>
-                        <span className="text-sm text-neutral-700">Customize Chrome</span>
-                    </button>
-                </div>
             </div>
         </motion.div>
     );
