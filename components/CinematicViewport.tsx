@@ -1,7 +1,12 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const CinematicViewport: React.FC = () => {
+interface CinematicViewportProps {
+  isResponding: boolean;
+  assistantMessage: string;
+}
+
+const CinematicViewport: React.FC<CinematicViewportProps> = ({ isResponding, assistantMessage }) => {
   return (
     <div className="w-full h-full relative rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm">
       {/* Background Image - Updated to the pink/purple lake landscape as requested */}
@@ -28,6 +33,30 @@ const CinematicViewport: React.FC = () => {
             </span>
           </div>
         </motion.div>
+      </div>
+
+      {/* Agent Response Widget - Centered at the bottom */}
+      <div className="absolute bottom-8 left-0 w-full flex justify-center pointer-events-none z-20">
+        <AnimatePresence>
+          {isResponding && (
+            <motion.div
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: "auto", opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="bg-white rounded-full h-[60px] flex items-center px-8 shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden whitespace-nowrap pointer-events-auto"
+            >
+              <div className="flex items-center gap-4">
+                <span className="text-neutral-600 text-[15px] font-light">
+                  {assistantMessage}
+                </span>
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#E9516E]">
+                  <div className="w-2.5 h-2.5 rounded-full bg-white shadow-sm" />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

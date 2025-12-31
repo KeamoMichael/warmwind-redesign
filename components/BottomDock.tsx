@@ -2,7 +2,11 @@ import React from 'react';
 import InputBar from './InputBar';
 import Avatar from './Avatar';
 
-const BottomDock: React.FC = () => {
+interface BottomDockProps {
+  onSendMessage: (message: string) => void;
+}
+
+const BottomDock: React.FC<BottomDockProps> = ({ onSendMessage }) => {
   return (
     <div className="w-full max-w-[1800px] mx-auto grid grid-cols-[1fr_auto_1fr] items-center gap-4">
       {/* Left Area: Empty as requested */}
@@ -11,7 +15,7 @@ const BottomDock: React.FC = () => {
 
       {/* Center Area: Input Bar */}
       <div className="flex items-center justify-center w-full">
-        <InputBar />
+        <InputBar onSendMessage={onSendMessage} />
       </div>
 
       {/* Right Area: Profile */}
