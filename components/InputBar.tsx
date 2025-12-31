@@ -14,7 +14,7 @@ const InputBar: React.FC<InputBarProps> = ({ onSendMessage, isResponding, onStop
   const [inputValue, setInputValue] = React.useState("");
 
   const handleSend = () => {
-    if (inputValue.trim() && !isResponding) {
+    if (inputValue.trim()) {
       onSendMessage(inputValue);
       setInputValue("");
     }
@@ -26,85 +26,35 @@ const InputBar: React.FC<InputBarProps> = ({ onSendMessage, isResponding, onStop
     }
   };
 
-  // Dot animation variants
-  const dotVariants = {
-    initial: { y: 0 },
-    animate: (i: number) => ({
-      y: [0, -4, 0],
-      transition: {
-        duration: 0.6,
-        repeat: Infinity,
-        delay: i * 0.1,
-        ease: "easeInOut"
-      }
-    })
-  };
-
   return (
     <motion.div
       className="relative flex items-center h-[60px] bg-white rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] pl-6 pr-2 overflow-hidden w-[380px]"
     >
       <div className="flex-1 flex items-center h-full relative">
-        {isResponding ? (
-          <div className="flex items-center justify-between w-full pr-4">
-            <div className="flex items-center text-neutral-400 font-light text-[15px] select-none">
-              {agentStatus === "keyboard" ? "Using Keyboard" :
-                agentStatus === "clicking" ? "Clicking Element" : "Thinking"}
-              {agentStatus === "clicking" || agentStatus === "keyboard" || !agentStatus ? (
-                <div className="flex ml-1 gap-0.5">
-                  {(!agentStatus || agentStatus === "thinking") && [0, 1, 2].map((i) => (
-                    <motion.span
-                      key={i}
-                      custom={i}
-                      variants={dotVariants}
-                      initial="initial"
-                      animate="animate"
-                    >
-                      .
-                    </motion.span>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-
-            {/* Status Icons */}
-            <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-neutral-400"
-            >
-              {agentStatus === "keyboard" && (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2" /><path d="M6 8h.01" /><path d="M10 8h.01" /><path d="M14 8h.01" /><path d="M18 8h.01" /><path d="M8 12h.01" /><path d="M12 12h.01" /><path d="M16 12h.01" /><path d="M7 16h10" />
-                </svg>
-              )}
-              {agentStatus === "clicking" && (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z" /><path d="m13 13 6 6" />
-                </svg>
-              )}
-            </motion.div>
-          </div>
-        ) : (
-          <input
-            type="text"
-            placeholder="Ask something"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="w-full bg-transparent border-none outline-none text-neutral-600 placeholder-neutral-400 font-light text-[15px] h-full"
-          />
-        )}
+        <input
+          type="text"
+          placeholder="Ask something"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="w-full bg-transparent border-none outline-none text-neutral-600 placeholder-neutral-400 font-light text-[15px] h-full"
+        />
       </div>
 
       <motion.button
         className="flex items-center justify-center w-10 h-10 shrink-0 ml-2 overflow-hidden"
         whileTap={{ scale: 0.95 }}
-        onClick={isResponding ? onStop : handleSend}
+        onClick={() => {
+          if (inputValue.trim()) {
+            handleSend();
+          } else if (isResponding) {
+            onStop();
+          }
+        }}
       >
         <img
-          src={isResponding ? "/assets/Stop Button.png" : "/assets/Send Button.png"}
-          alt={isResponding ? "Stop" : "Send"}
+          src={inputValue.trim() ? "/assets/Send Button.png" : (isResponding ? "/assets/Stop Button.png" : "/assets/Send Button.png")}
+          alt={inputValue.trim() ? "Send" : (isResponding ? "Stop" : "Send")}
           className="w-full h-full object-contain"
         />
       </motion.button>

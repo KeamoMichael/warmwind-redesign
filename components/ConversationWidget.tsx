@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, X, Maximize2, Minimize2, ChevronDown, ChevronRight } from 'lucide-react';
+import { X, Maximize2, Minimize2, ChevronDown } from 'lucide-react';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -12,10 +12,11 @@ interface ConversationWidgetProps {
     agentSteps: string[];
     activeStepIndex: number;
     isAgenticMode: boolean;
-    onSendMessage: (message: string) => void;
+    onSendMessage: (message: string) => void; // Kept for interface compatibility, though unused internally now
     onClose: () => void;
     isResponding: boolean;
     currentAssistantMessage: string;
+    agentStatus?: "thinking" | "keyboard" | "clicking" | null;
 }
 
 const ConversationWidget: React.FC<ConversationWidgetProps> = ({
@@ -23,198 +24,178 @@ const ConversationWidget: React.FC<ConversationWidgetProps> = ({
     agentSteps,
     activeStepIndex,
     isAgenticMode,
-    onSendMessage,
     onClose,
     isResponding,
-    currentAssistantMessage
+    currentAssistantMessage,
+    agentStatus
 }) => {
-    const [isExpanded, setIsExpanded] = React.useState(false);
-    const [inputValue, setInputValue] = React.useState("");
+    const [isExpanded, setIsExpanded] = React.useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Auto-scroll to bottom of messages
     useEffect(() => {
         if (messagesEndRef.current && isExpanded) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [messages, isExpanded, currentAssistantMessage]);
 
-    const handleSend = () => {
-        if (inputValue.trim()) {
-            onSendMessage(inputValue);
-            setInputValue("");
-        }
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-        }
-    };
-
-    // Determine widget size variants
+    // Animation variants
     const variants = {
         compact: {
-            width: 500,
-            height: isAgenticMode ? 180 : 80,
-            borderRadius: 32,
+            width: 380, // Matches InputBar width roughly
+            height: 60,
+            borderRadius: 30,
+            y: 0
         },
         expanded: {
             width: 600,
             height: 500,
-            borderRadius: 24,
+            borderRadius: 32,
+            y: -20 // Slight lift
         }
     };
 
     return (
         <motion.div
             layout
-            initial="compact"
+            initial="expanded"
             animate={isExpanded ? "expanded" : "compact"}
             variants={variants}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="bg-white/95 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-white/50 overflow-hidden flex flex-col relative"
         >
-            {/* Header Controls */}
-            <div className="absolute top-4 right-4 flex items-center gap-2 z-20">
-                <button
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="p-1.5 hover:bg-black/5 rounded-full transition-colors text-neutral-400 hover:text-neutral-600"
-                >
-                    {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-                </button>
-                <button
-                    onClick={onClose}
-                    className="p-1.5 hover:bg-red-50 rounded-full transition-colors text-neutral-400 hover:text-red-500"
-                >
-                    <X size={16} />
-                </button>
-            </div>
-
-            {/* Content Area */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 scrollbar-hide">
-                {!isExpanded ? (
-                    /* Compact View */
-                    <div className="flex flex-col h-full justify-center">
-                        {isAgenticMode ? (
-                            /* Agentic Steps View */
-                            <div className="flex flex-col items-center justify-center w-full">
-                                <AnimatePresence mode="popLayout">
-                                    {agentSteps.map((step, idx) => {
-                                        const relativePos = idx - activeStepIndex;
-                                        if (relativePos < 0 || relativePos > 1) return null;
-
-                                        return (
-                                            <motion.div
-                                                key={step + idx}
-                                                initial={{ y: 20, opacity: 0 }}
-                                                animate={{
-                                                    y: relativePos === 0 ? 0 : 20,
-                                                    opacity: relativePos === 0 ? 1 : 0.4,
-                                                    scale: relativePos === 0 ? 1 : 0.95
-                                                }}
-                                                exit={{ y: -20, opacity: 0 }}
-                                                className="flex items-center gap-3 w-full justify-center mb-2"
-                                            >
-                                                {relativePos === 0 && (
-                                                    <div className="w-2 h-2 rounded-full bg-[#4db7ae] animate-pulse shadow-[0_0_8px_#4db7ae]" />
-                                                )}
-                                                <span className={`text-[15px] ${relativePos === 0 ? 'text-neutral-800 font-medium' : 'text-neutral-400'}`}>
-                                                    {step}
-                                                </span>
-                                            </motion.div>
-                                        );
-                                    })}
-                                </AnimatePresence>
-                            </div>
-                        ) : (
-                            /* Simple Message View */
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="flex items-center justify-center text-center"
-                            >
-                                <span className="text-[17px] text-neutral-700 font-light leading-relaxed px-8">
-                                    {currentAssistantMessage || "I'm ready to help."}
-                                </span>
-                            </motion.div>
-                        )}
-                    </div>
-                ) : (
-                    /* Expanded Conversation View */
-                    <div className="flex flex-col gap-4 pb-4">
-                        {messages.map((msg, i) => (
-                            <div
-                                key={i}
-                                className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                            >
-                                <div
-                                    className={`max-w-[80%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${msg.role === 'user'
-                                            ? 'bg-[#4db7ae] text-white rounded-br-none shadow-sm'
-                                            : 'bg-neutral-100 text-neutral-800 rounded-bl-none'
-                                        }`}
-                                >
-                                    {msg.content}
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* Current generating message or Thinking state */}
-                        {isResponding && (
-                            <div className="flex justify-start w-full">
-                                <div className="bg-neutral-50 text-neutral-500 rounded-2xl rounded-bl-none px-4 py-3 text-[14px] flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce" />
-                                    <div className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce [animation-delay:0.2s]" />
-                                    <div className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce [animation-delay:0.4s]" />
-                                    <span className="ml-1">{isAgenticMode ? "Processing task..." : "Thinking..."}</span>
-                                </div>
-                            </div>
-                        )}
-                        <div ref={messagesEndRef} />
-                    </div>
-                )}
-            </div>
-
-            {/* Footer / Input Area (Only in Expanded Mode) */}
+            {/* Expanded Header Controls */}
             <AnimatePresence>
                 {isExpanded && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        className="p-4 border-t border-neutral-100 bg-white/50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute top-5 right-5 flex items-center gap-2 z-20"
                     >
-                        <div className="relative flex items-center bg-white rounded-full border border-neutral-200 px-4 py-2 shadow-sm focus-within:border-[#4db7ae] focus-within:ring-1 focus-within:ring-[#4db7ae]/20 transition-all">
-                            <input
-                                type="text"
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                placeholder="Reply..."
-                                className="flex-1 bg-transparent border-none outline-none text-[15px] text-neutral-800 placeholder-neutral-400"
-                                autoFocus
-                            />
-                            <button
-                                onClick={handleSend}
-                                disabled={!inputValue.trim()}
-                                className="ml-2 p-1.5 bg-[#4db7ae] text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110 transition-all"
-                            >
-                                <ChevronRight size={18} />
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => setIsExpanded(false)}
+                            className="p-1.5 hover:bg-black/5 rounded-full transition-colors text-neutral-400 hover:text-neutral-600"
+                        >
+                            <Minimize2 size={18} />
+                        </button>
+                        <button
+                            onClick={onClose}
+                            className="p-1.5 hover:bg-red-50 rounded-full transition-colors text-neutral-400 hover:text-red-500"
+                        >
+                            <X size={18} />
+                        </button>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Click-to-expand hint for Compact Mode */}
-            {!isExpanded && (
-                <motion.div
-                    className="absolute bottom-2 w-full flex justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer text-neutral-300"
-                    onClick={() => setIsExpanded(true)}
-                >
-                    <ChevronDown size={20} />
-                </motion.div>
-            )}
+            {/* Content Area */}
+            <div className="flex-1 overflow-hidden relative">
+                <AnimatePresence mode="wait">
+                    {!isExpanded ? (
+                        /* Collapsed: Active Agentic Steps / Status */
+                        <motion.div
+                            key="collapsed"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 flex items-center justify-between px-6 cursor-pointer hover:bg-black/5 transition-colors"
+                            onClick={() => setIsExpanded(true)}
+                        >
+                            <div className="flex items-center gap-3">
+                                {isResponding ? (
+                                    <>
+                                        <div className="flex gap-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#4db7ae] animate-pulse" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#4db7ae] animate-pulse delay-75" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#4db7ae] animate-pulse delay-150" />
+                                        </div>
+                                        <span className="text-[15px] font-medium text-neutral-600">
+                                            {agentStatus === 'keyboard' ? 'Typing...' :
+                                                agentStatus === 'clicking' ? 'Interacting...' :
+                                                    isAgenticMode ? 'Working on task...' : 'Thinking...'}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="text-[15px] font-medium text-neutral-500">
+                                        View conversation
+                                    </span>
+                                )}
+                            </div>
+                            <Maximize2 size={16} className="text-neutral-400" />
+                        </motion.div>
+                    ) : (
+                        /* Expanded: Conversation History */
+                        <motion.div
+                            key="expanded"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="h-full overflow-y-auto px-6 pt-12 pb-6 scrollbar-hide"
+                        >
+                            <div className="flex flex-col gap-6">
+                                {messages.map((msg, i) => (
+                                    <div
+                                        key={i}
+                                        className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                    >
+                                        <div
+                                            className={`max-w-[85%] rounded-2xl px-5 py-4 text-[15px] leading-relaxed shadow-sm ${msg.role === 'user'
+                                                ? 'bg-[#4db7ae] text-white rounded-br-none'
+                                                : 'bg-neutral-50 text-neutral-800 rounded-bl-none border border-neutral-100'
+                                                }`}
+                                        >
+                                            {msg.content}
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {/* Agentic Steps Visualization Inline */}
+                                {isAgenticMode && isResponding && agentSteps.length > 0 && (
+                                    <div className="flex justify-start w-full">
+                                        <div className="bg-neutral-50 border border-neutral-100 rounded-2xl rounded-bl-none px-5 py-4 w-full max-w-[85%]">
+                                            <div className="flex flex-col gap-3">
+                                                <div className="flex items-center gap-2 text-[#4db7ae] text-sm font-medium">
+                                                    <div className="w-2 h-2 rounded-full bg-[#4db7ae] animate-pulse" />
+                                                    Processing Task
+                                                </div>
+                                                <div className="space-y-2">
+                                                    {agentSteps.map((step, idx) => {
+                                                        const isCurrent = idx === activeStepIndex;
+                                                        const isPast = idx < activeStepIndex;
+
+                                                        // Only show current and recent past steps to keep it clean
+                                                        if (idx > activeStepIndex + 1 || idx < activeStepIndex - 2) return null;
+
+                                                        return (
+                                                            <div key={idx} className={`flex items-start gap-3 text-[14px] transition-colors ${isCurrent ? 'text-neutral-800' : isPast ? 'text-neutral-400' : 'text-neutral-300'}`}>
+                                                                <div className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${isCurrent ? 'bg-neutral-800' : 'bg-neutral-200'}`} />
+                                                                <span>{step}</span>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Thinking Indicator if no steps yet */}
+                                {isResponding && (!isAgenticMode || agentSteps.length === 0) && (
+                                    <div className="flex justify-start w-full">
+                                        <div className="bg-neutral-50 border border-neutral-100 rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-1.5">
+                                            <div className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce" />
+                                            <div className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+                                            <div className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+                                        </div>
+                                    </div>
+                                )}
+                                <div ref={messagesEndRef} />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
         </motion.div>
     );
 };

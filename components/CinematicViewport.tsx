@@ -301,6 +301,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
                 onClose={onCloseConversationWidget}
                 isResponding={isResponding}
                 currentAssistantMessage={assistantMessage}
+                agentStatus={agentStatus}
               />
             </div>
           )}
