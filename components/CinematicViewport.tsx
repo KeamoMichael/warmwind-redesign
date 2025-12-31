@@ -6,37 +6,90 @@ interface CinematicViewportProps {
   assistantMessage: string;
   agentSteps: string[];
   activeStepIndex: number; // -1 = show message, 0+ = show steps
-  isAgenticMode: boolean; // New prop for top island state
+  isAgenticMode: boolean;
+  isBooting: boolean; // Prop to control the startup reveal
 }
+
+const WelcomeText: React.FC = () => {
+  const text = "Welcome";
+  const characters = text.split("");
+
+  return (
+    <div className="flex gap-[2px]">
+      {characters.map((char, i) => (
+        <motion.span
+          key={i}
+          initial={{ opacity: 0, filter: "blur(10px)", y: 10 }}
+          animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+          transition={{
+            duration: 1.2,
+            delay: 0.5 + i * 0.1,
+            ease: [0.22, 1, 0.36, 1]
+          }}
+          className="text-white text-7xl md:text-9xl font-['Dancing_Script'] drop-shadow-2xl"
+        >
+          {char}
+        </motion.span>
+      ))}
+    </div>
+  );
+};
 
 const CinematicViewport: React.FC<CinematicViewportProps> = ({
   isResponding,
   assistantMessage,
   agentSteps,
   activeStepIndex,
-  isAgenticMode
+  isAgenticMode,
+  isBooting
 }) => {
   const isAgenticState = activeStepIndex >= 0;
 
   return (
-    <div className="w-full h-full relative rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm">
+    <motion.div
+      layout
+      transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+      className={`relative w-full overflow-hidden shadow-sm transition-all duration-1000 ${isBooting ? "h-[100vh] -m-4 md:-m-6 rounded-none outline-none" : "h-full rounded-[32px] md:rounded-[40px]"
+        }`}
+    >
       {/* Background Image */}
       <img
         src="/assets/OS Wallpaper.jpeg"
         alt="OS Wallpaper"
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover select-none pointer-events-none"
       />
 
+      {/* Welcome Sequence Overlay */}
+      <AnimatePresence>
+        {isBooting && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, filter: "blur(20px)", transition: { duration: 1 } }}
+            className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none bg-black/10"
+          >
+            <WelcomeText />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Overlay gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/10 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/15 pointer-events-none" />
 
       {/* Top Island (Badge) */}
-      <div className="absolute top-8 left-0 w-full flex justify-center pointer-events-none z-10 transition-all duration-700">
+      <div className="absolute top-8 left-0 w-full flex justify-center pointer-events-none z-20">
         <motion.div
           layout
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0, scale: 0, y: -20 }}
+          animate={{
+            opacity: isBooting ? 0 : 1,
+            scale: isBooting ? 0 : 1,
+            y: 0
+          }}
+          transition={{
+            duration: 0.8,
+            delay: isBooting ? 0 : 0.8,
+            ease: [0.22, 1, 0.36, 1]
+          }}
           className="pointer-events-auto"
         >
           <AnimatePresence mode="wait">
