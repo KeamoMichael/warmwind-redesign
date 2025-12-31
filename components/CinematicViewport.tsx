@@ -62,11 +62,11 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
     // Start launching animation
     setLaunchingApp(appName);
 
-    // After bounce animation completes (~1.2s), set as active
+    // After bounce animation completes (~1.8s), set as active
     setTimeout(() => {
       setLaunchingApp(null);
       setActiveApp(appName);
-    }, 1200);
+    }, 1800);
   };
 
   const apps = [
@@ -146,12 +146,12 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
                     {/* App Icon Container */}
                     <motion.div
                       animate={isLaunching ? {
-                        translateY: [0, -30, 0, -20, 0, -10, 0, -5, 0],
+                        translateY: [0, -20, 0],
                       } : {}}
                       transition={{
-                        duration: 1.2,
-                        times: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.85, 0.95, 1],
-                        ease: "easeOut"
+                        duration: 0.6,
+                        repeat: isLaunching ? Infinity : 0,
+                        ease: [0.42, 0, 0.58, 1]
                       }}
                       className={`
                         w-10 h-10 flex items-center justify-center
