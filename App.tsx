@@ -8,7 +8,16 @@ const App: React.FC = () => {
   const [agentSteps, setAgentSteps] = React.useState<string[]>([]);
   const [activeStepIndex, setActiveStepIndex] = React.useState(-1);
   const [isAgenticMode, setIsAgenticMode] = React.useState(false);
+  const [isBooting, setIsBooting] = React.useState(true);
   const responseTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  React.useEffect(() => {
+    // OS Boot Sequence
+    const timer = setTimeout(() => {
+      setIsBooting(false);
+    }, 4500); // Allow time for character-by-character reveal + display + hide
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSendMessage = (message: string) => {
     if (!message.trim()) return;
@@ -62,6 +71,7 @@ const App: React.FC = () => {
           agentSteps={agentSteps}
           activeStepIndex={activeStepIndex}
           isAgenticMode={isAgenticMode}
+          isBooting={isBooting}
         />
       </section>
 
@@ -71,6 +81,7 @@ const App: React.FC = () => {
           onSendMessage={handleSendMessage}
           isResponding={isResponding}
           onStop={handleStop}
+          isBooting={isBooting}
         />
       </section>
     </main>
