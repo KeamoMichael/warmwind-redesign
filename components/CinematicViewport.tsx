@@ -130,24 +130,30 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
             </div>
           )}
 
-          {/* Plus Button - only render when ready to show */}
-          {showPlusButton && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{
+          {/* Plus Button - render immediately as placeholder, then animate */}
+          <motion.div
+            initial={{ scale: 1, opacity: 0 }}
+            animate={{
+              scale: showPlusButton ? 1 : 1,
+              opacity: showPlusButton ? 1 : 0
+            }}
+            transition={{
+              scale: {
                 duration: 0.5,
                 ease: [0.4, 0, 0.2, 1]
-              }}
-              className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all shrink-0"
-            >
-              <img
-                src="/assets/plus button.png"
-                alt="Add"
-                className="w-full h-full object-contain drop-shadow-sm"
-              />
-            </motion.div>
-          )}
+              },
+              opacity: {
+                duration: 0.3
+              }
+            }}
+            className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all shrink-0"
+          >
+            <img
+              src="/assets/plus button.png"
+              alt="Add"
+              className="w-full h-full object-contain drop-shadow-sm"
+            />
+          </motion.div>
         </div>
       )}
     </motion.div>
