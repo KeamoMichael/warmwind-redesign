@@ -31,27 +31,8 @@ const AgentCursor: React.FC<AgentCursorProps> = ({ x, y, isVisible, isDown = fal
                     style={{ x, y }} // Use direct style for override
                 >
                     <div className="relative flex items-center justify-center">
-                        {/* Continuous Pulse Ring (Outer Halo) */}
-                        <motion.div
-                            className="absolute bg-[#4db7ae] rounded-full"
-                            style={{
-                                width: '20px',
-                                height: '20px',
-                            }}
-                            animate={{
-                                scale: [0, 2.5, 2.5],
-                                opacity: [0.8, 0, 0]
-                            }}
-                            transition={{
-                                duration: 1.5,
-                                times: [0, 0.8, 1], // Fade out by 80%, stay invisible for last 20%
-                                repeat: Infinity,
-                                ease: "easeOut"
-                            }}
-                        />
-
                         {/* Main Cursor Dot */}
-                        <div className="relative z-20 w-5 h-5 bg-[#4db7ae] rounded-full border-[2px] border-white shadow-md" />
+                        <div className="relative z-20 w-4 h-4 bg-[#4db7ae] rounded-full border-[2px] border-white shadow-md" />
 
                         {/* Click Ripple Ripple */}
                         {isDown && (
