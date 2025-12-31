@@ -3,19 +3,18 @@ import React from 'react';
 interface AvatarProps {
   src: string;
   alt: string;
-  size?: number;
+  className?: string;
 }
 
-const Avatar: React.FC<AvatarProps> = ({ src, alt, size = 44 }) => {
+const Avatar: React.FC<AvatarProps> = ({ src, alt, className = "" }) => {
   return (
-    <div 
-      className="rounded-full overflow-hidden border border-white/50 shadow-sm transition-transform hover:scale-105 duration-300"
-      style={{ width: size, height: size }}
+    <div
+      className={`relative aspect-square rounded-full overflow-hidden border border-white/50 shadow-sm transition-transform duration-300 ${className}`}
     >
-      <img 
-        src={src} 
-        alt={alt} 
-        className="w-full h-full object-cover"
+      <img
+        src={src}
+        alt={alt}
+        className="absolute inset-0 w-full h-full object-cover"
       />
     </div>
   );
