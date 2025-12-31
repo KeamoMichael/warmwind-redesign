@@ -12,7 +12,7 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-4 bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col"
+            className="w-[800px] h-[580px] bg-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col border border-neutral-200"
             style={{ zIndex: 10 }}
         >
             {/* Window Title Bar */}

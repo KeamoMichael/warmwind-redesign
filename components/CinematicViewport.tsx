@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChromeWindow } from './ChromeWindow';
+import { AppStore } from './AppStore';
 
 interface CinematicViewportProps {
   isResponding: boolean;
@@ -40,7 +41,8 @@ const TopIsland: React.FC<{
   isAgenticMode: boolean;
   openApps: string[];
   onOpenApp: (appName: string) => void;
-}> = ({ isAgenticMode, openApps, onOpenApp }) => {
+  onOpenAppStore: () => void;
+}> = ({ isAgenticMode, openApps, onOpenApp, onOpenAppStore }) => {
   const [showApps, setShowApps] = React.useState(false);
   const [showPlusButton, setShowPlusButton] = React.useState(false);
   const [launchingApp, setLaunchingApp] = React.useState<string | null>(null);
@@ -218,6 +220,7 @@ const TopIsland: React.FC<{
             }}
             style={{ willChange: "opacity" }}
             className="group cursor-pointer shrink-0"
+            onClick={onOpenAppStore}
           >
             <div className="w-10 h-10 rounded-full flex items-center justify-center transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-95">
               <img
@@ -243,22 +246,34 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
 }) => {
   const isAgenticState = activeStepIndex >= 0;
   const [openApps, setOpenApps] = React.useState<string[]>([]);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   const handleCloseApp = (appName: string) => {
     setOpenApps(prev => prev.filter(app => app !== appName));
   };
 
   const handleOpenApp = (appName: string) => {
-    if (!openApps.includes(appName)) {
-      setOpenApps(prev => [...prev, appName]);
+    if (openApps.includes(appName)) {
+      // If already open, move it to the front (center)
+      setOpenApps(prev => [appName, ...prev.filter(app => app !== appName)]);
+    } else {
+      // Prepend new app to push others to the right
+      setOpenApps(prev => [appName, ...prev]);
     }
   };
+
+  // Scroll to front when a new app is opened
+  React.useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    }
+  }, [openApps.length]);
 
   return (
     <div className="relative w-full h-full rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm">
       {/* Background Image */}
       <img
-        src="/assets/OS Wallpaper.jpeg"
+        src="/assets/Wallpaper.jpg"
         alt="OS Wallpaper"
         className="w-full h-full object-cover select-none pointer-events-none"
       />
@@ -280,16 +295,54 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
       <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/15 pointer-events-none" />
 
       {/* Top Island (Badge) */}
-      <div className="absolute top-8 left-0 w-full flex justify-center pointer-events-none z-20">
-        {!isBooting && <TopIsland isAgenticMode={isAgenticMode} openApps={openApps} onOpenApp={handleOpenApp} />}
+      <div className="absolute top-8 left-0 w-full flex justify-center pointer-events-none z-30">
+        {!isBooting && (
+          <TopIsland
+            isAgenticMode={isAgenticMode}
+            openApps={openApps}
+            onOpenApp={handleOpenApp}
+            onOpenAppStore={() => handleOpenApp("App Store")}
+          />
+        )}
       </div>
 
-      {/* Chrome Window */}
-      <AnimatePresence>
-        {openApps.includes("Chrome") && (
-          <ChromeWindow onClose={() => handleCloseApp("Chrome")} />
-        )}
-      </AnimatePresence>
+      {/* Carousel Window Container */}
+      <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none z-10">
+        <div
+          ref={scrollContainerRef}
+          className="flex items-center gap-20 px-[calc(50vw-400px)] pointer-events-auto overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full py-20"
+          style={{ scrollBehavior: 'smooth' }}
+        >
+          <AnimatePresence mode="popLayout">
+            {openApps.map((appName, index) => (
+              <motion.div
+                key={appName}
+                layout
+                initial={{ opacity: 0, scale: 0.8, x: -200 }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  x: 0,
+                  zIndex: 20 - index,
+                }}
+                exit={{ opacity: 0, scale: 0.8, x: 200 }}
+                transition={{
+                  duration: 0.6,
+                  ease: [0.16, 1, 0.3, 1],
+                  layout: { duration: 0.6 }
+                }}
+                className="shrink-0 snap-center"
+              >
+                {appName === "Chrome" ? (
+                  <ChromeWindow onClose={() => handleCloseApp("Chrome")} />
+                ) : appName === "App Store" ? (
+                  <AppStore onClose={() => handleCloseApp("App Store")} onInstall={(name) => handleOpenApp(name)} />
+                ) : null}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </div>
 
       {/* Agent Response/Agentic Widget */}
       <div className="absolute bottom-8 left-0 w-full flex justify-center pointer-events-none z-20 px-4">
