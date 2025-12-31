@@ -2,7 +2,6 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChromeWindow } from './ChromeWindow';
 import { AppStore } from './AppStore';
-import AgentCursor from './AgentCursor';
 import ConversationWidget from './ConversationWidget';
 
 interface CinematicViewportProps {
@@ -13,7 +12,6 @@ interface CinematicViewportProps {
   isAgenticMode: boolean;
   isBooting: boolean; // Prop to control the startup reveal
   agentStatus?: "thinking" | "keyboard" | "clicking" | null;
-  cursorPosition?: { x: number; y: number };
   openApps: string[];
   onOpenApp: (appName: string) => void;
   onCloseApp: (appName: string) => void;
@@ -190,7 +188,6 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   isAgenticMode,
   isBooting,
   agentStatus,
-  cursorPosition,
   openApps,
   onOpenApp,
   onCloseApp,
@@ -308,12 +305,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
         </AnimatePresence>
       </div>
 
-      {/* Agent Feedback: Pulsing Red Cursor */}
-      <AgentCursor
-        x={cursorPosition?.x ?? 0}
-        y={cursorPosition?.y ?? 0}
-        isVisible={!!isResponding && agentStatus === 'clicking'}
-      />
+
 
       {/* Agent Feedback: Inner Screen Glow */}
       <AnimatePresence>
