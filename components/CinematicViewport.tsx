@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChromeWindow } from './ChromeWindow';
 
 interface CinematicViewportProps {
   isResponding: boolean;
@@ -35,10 +36,13 @@ const WelcomeText: React.FC = () => {
   );
 };
 
-const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
+const TopIsland: React.FC<{
+  isAgenticMode: boolean;
+  openApps: string[];
+  onOpenApp: (appName: string) => void;
+}> = ({ isAgenticMode, openApps, onOpenApp }) => {
   const [showApps, setShowApps] = React.useState(false);
   const [showPlusButton, setShowPlusButton] = React.useState(false);
-  const [activeApp, setActiveApp] = React.useState<string | null>(null);
   const [launchingApp, setLaunchingApp] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -62,10 +66,14 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
     // Start launching animation
     setLaunchingApp(appName);
 
-    // After bounce animation completes (~1.8s), set as active
+    // After bounce animation completes (~1.8s), open the app
     setTimeout(() => {
       setLaunchingApp(null);
-      setActiveApp(appName);
+
+      // Only Chrome is implemented - other apps don't open yet
+      if (appName === "Chrome") {
+        onOpenApp(appName);
+      }
     }, 1800);
   };
 
@@ -126,7 +134,7 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
           {showApps && (
             <div className="flex items-center gap-3">
               {apps.map((app, index) => {
-                const isActive = activeApp === app.alt;
+                const isActive = openApps.includes(app.alt);
                 const isLaunching = launchingApp === app.alt;
 
                 return (
@@ -234,6 +242,17 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   isBooting
 }) => {
   const isAgenticState = activeStepIndex >= 0;
+  const [openApps, setOpenApps] = React.useState<string[]>([]);
+
+  const handleCloseApp = (appName: string) => {
+    setOpenApps(prev => prev.filter(app => app !== appName));
+  };
+
+  const handleOpenApp = (appName: string) => {
+    if (!openApps.includes(appName)) {
+      setOpenApps(prev => [...prev, appName]);
+    }
+  };
 
   return (
     <div className="relative w-full h-full rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm">
@@ -262,8 +281,15 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
 
       {/* Top Island (Badge) */}
       <div className="absolute top-8 left-0 w-full flex justify-center pointer-events-none z-20">
-        {!isBooting && <TopIsland isAgenticMode={isAgenticMode} />}
+        {!isBooting && <TopIsland isAgenticMode={isAgenticMode} openApps={openApps} onOpenApp={handleOpenApp} />}
       </div>
+
+      {/* Chrome Window */}
+      <AnimatePresence>
+        {openApps.includes("Chrome") && (
+          <ChromeWindow onClose={() => handleCloseApp("Chrome")} />
+        )}
+      </AnimatePresence>
 
       {/* Agent Response/Agentic Widget */}
       <div className="absolute bottom-8 left-0 w-full flex justify-center pointer-events-none z-20 px-4">
