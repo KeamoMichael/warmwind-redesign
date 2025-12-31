@@ -6,13 +6,15 @@ interface CinematicViewportProps {
   assistantMessage: string;
   agentSteps: string[];
   activeStepIndex: number; // -1 = show message, 0+ = show steps
+  isAgenticMode: boolean; // New prop for top island state
 }
 
 const CinematicViewport: React.FC<CinematicViewportProps> = ({
   isResponding,
   assistantMessage,
   agentSteps,
-  activeStepIndex
+  activeStepIndex,
+  isAgenticMode
 }) => {
   const isAgenticState = activeStepIndex >= 0;
 
@@ -28,21 +30,50 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
       {/* Overlay gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/10 pointer-events-none" />
 
-      {/* Top Badge */}
-      <div className="absolute top-8 left-0 w-full flex justify-center pointer-events-none z-10">
+      {/* Top Island (Badge) */}
+      <div className="absolute top-8 left-0 w-full flex justify-center pointer-events-none z-10 transition-all duration-700">
         <motion.div
-          initial={{ opacity: 0, y: -20, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+          layout
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="pointer-events-auto"
         >
-          <div className="bg-white/95 backdrop-blur-sm px-9 py-5 rounded-[18px] shadow-sm border border-white/20 flex items-center justify-center">
-            <img
-              src="/assets/warmwind logo text.png"
-              alt="warmwind"
-              className="h-5 w-auto object-contain opacity-95 brightness-95"
-            />
-          </div>
+          <AnimatePresence mode="wait">
+            {!isAgenticMode ? (
+              /* Default State: Branding Logo */
+              <motion.div
+                key="logo"
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="bg-white/95 backdrop-blur-sm px-9 py-5 rounded-[18px] shadow-sm border border-white/20 flex items-center justify-center gap-2"
+              >
+                <img
+                  src="/assets/warmwind logo text.png"
+                  alt="warmwind"
+                  className="h-5 w-auto object-contain opacity-95 brightness-95"
+                />
+              </motion.div>
+            ) : (
+              /* Agentic Mode: Plus Button */
+              <motion.div
+                key="plus"
+                layout
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="bg-white/95 backdrop-blur-md w-[72px] h-[72px] rounded-full shadow-lg border border-white/30 flex items-center justify-center p-1 cursor-pointer hover:scale-105 transition-transform"
+              >
+                <img
+                  src="/assets/plus button.png"
+                  alt="Add"
+                  className="w-full h-full object-contain"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
 

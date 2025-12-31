@@ -7,6 +7,7 @@ const App: React.FC = () => {
   const [assistantMessage, setAssistantMessage] = React.useState("");
   const [agentSteps, setAgentSteps] = React.useState<string[]>([]);
   const [activeStepIndex, setActiveStepIndex] = React.useState(-1);
+  const [isAgenticMode, setIsAgenticMode] = React.useState(false);
   const responseTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const handleSendMessage = (message: string) => {
@@ -16,6 +17,7 @@ const App: React.FC = () => {
     setAssistantMessage(`Let me search the ${message} for you.`);
     setAgentSteps(["Open Browser", `Search ${message}`, "Read Results", "Synthesize Data"]);
     setActiveStepIndex(-1); // -1 means initial message state
+    setIsAgenticMode(true); // Switch top island to plus mode
 
     if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
 
@@ -43,6 +45,7 @@ const App: React.FC = () => {
     setIsResponding(false);
     setActiveStepIndex(-1);
     setAgentSteps([]);
+    setIsAgenticMode(false);
     if (responseTimeoutRef.current) {
       clearTimeout(responseTimeoutRef.current);
       responseTimeoutRef.current = null;
@@ -58,6 +61,7 @@ const App: React.FC = () => {
           assistantMessage={assistantMessage}
           agentSteps={agentSteps}
           activeStepIndex={activeStepIndex}
+          isAgenticMode={isAgenticMode}
         />
       </section>
 
