@@ -93,7 +93,7 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="relative h-5 overflow-hidden px-4"
+            className="relative h-11 flex items-center justify-center overflow-hidden"
           >
             <img
               src="/assets/warmwind logo text.png"
