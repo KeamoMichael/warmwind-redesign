@@ -88,7 +88,7 @@ const InputBar: React.FC<InputBarProps> = ({ onSendMessage, isResponding, onStop
         animate={{ scale: isBooting ? 0 : 1 }}
         transition={{
           duration: 0.5,
-          delay: isBooting ? 0 : 2.2,
+          delay: isBooting ? 0 : 2.4,
           type: "spring",
           stiffness: 400,
           damping: 20

@@ -50,7 +50,7 @@ const BottomDock: React.FC<BottomDockProps> = ({ onSendMessage, isResponding, on
           }}
           transition={{
             duration: 0.6,
-            delay: isBooting ? 0 : 1.8,
+            delay: isBooting ? 0 : 2.6,
             ease: [0.22, 1, 0.36, 1]
           }}
           className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 transition-all duration-300 hover:scale-110 cursor-pointer"

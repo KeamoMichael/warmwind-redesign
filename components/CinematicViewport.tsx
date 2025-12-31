@@ -46,12 +46,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   const isAgenticState = activeStepIndex >= 0;
 
   return (
-    <motion.div
-      layout
-      transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-      className={`relative w-full overflow-hidden shadow-sm transition-all duration-1000 ${isBooting ? "h-[100vh] -m-4 md:-m-6 rounded-none outline-none" : "h-full rounded-[32px] md:rounded-[40px]"
-        }`}
-    >
+    <div className="relative w-full h-full rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm">
       {/* Background Image */}
       <img
         src="/assets/OS Wallpaper.jpeg"
@@ -79,18 +74,16 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
       <div className="absolute top-8 left-0 w-full flex justify-center pointer-events-none z-20">
         <motion.div
           layout
-          initial={{ opacity: 0, scale: 0, y: -20 }}
+          initial={{ opacity: 0, width: 0 }}
           animate={{
             opacity: isBooting ? 0 : 1,
-            scale: isBooting ? 0 : 1,
-            y: 0
+            width: isBooting ? 0 : "auto"
           }}
           transition={{
-            duration: 0.8,
-            delay: isBooting ? 0 : 0.8,
-            ease: [0.22, 1, 0.36, 1]
+            width: { duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] },
+            opacity: { duration: 0.5, delay: 0.5 }
           }}
-          className="pointer-events-auto"
+          className="pointer-events-auto overflow-hidden flex justify-center"
         >
           <AnimatePresence mode="wait">
             {!isAgenticMode ? (
@@ -98,9 +91,10 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
               <motion.div
                 key="logo"
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8, delay: 1.2 }}
                 className="bg-white/95 backdrop-blur-sm px-9 py-5 rounded-[18px] shadow-sm border border-white/20 flex items-center justify-center gap-2"
               >
                 <img
