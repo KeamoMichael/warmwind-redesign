@@ -38,7 +38,8 @@ const WelcomeText: React.FC = () => {
 const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
   const [showApps, setShowApps] = React.useState(false);
   const [showPlusButton, setShowPlusButton] = React.useState(false);
-  const [activeApp, setActiveApp] = React.useState<string>("Chrome");
+  const [activeApp, setActiveApp] = React.useState<string | null>(null);
+  const [launchingApp, setLaunchingApp] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (isAgenticMode) {
@@ -56,6 +57,17 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
       setShowPlusButton(false);
     }
   }, [isAgenticMode]);
+
+  const handleAppClick = (appName: string) => {
+    // Start launching animation
+    setLaunchingApp(appName);
+
+    // After bounce animation completes (~1.2s), set as active
+    setTimeout(() => {
+      setLaunchingApp(null);
+      setActiveApp(appName);
+    }, 1200);
+  };
 
   const apps = [
     { icon: "/assets/gmail icon.png", alt: "Gmail" },
@@ -115,6 +127,8 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
             <div className="flex items-center gap-3">
               {apps.map((app, index) => {
                 const isActive = activeApp === app.alt;
+                const isLaunching = launchingApp === app.alt;
+
                 return (
                   <motion.div
                     key={app.alt}
@@ -127,16 +141,26 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
                     }}
                     style={{ willChange: "transform, opacity" }}
                     className="relative flex flex-col items-center group cursor-pointer shrink-0"
-                    onClick={() => setActiveApp(app.alt)}
+                    onClick={() => handleAppClick(app.alt)}
                   >
                     {/* App Icon Container */}
-                    <div
+                    <motion.div
+                      animate={isLaunching ? {
+                        translateY: [0, -30, 0, -20, 0, -10, 0, -5, 0],
+                      } : {}}
+                      transition={{
+                        duration: 1.2,
+                        times: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.85, 0.95, 1],
+                        ease: "easeOut"
+                      }}
                       className={`
                         w-10 h-10 flex items-center justify-center
                         transition-all duration-200 ease-out
                         ${isActive
                           ? 'scale-90 -translate-y-1 group-hover:scale-95'
-                          : 'group-hover:-translate-y-1'
+                          : isLaunching
+                            ? ''
+                            : 'group-hover:-translate-y-1'
                         }
                       `}
                     >
@@ -145,7 +169,7 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
                         alt={app.alt}
                         className="w-full h-full object-contain"
                       />
-                    </div>
+                    </motion.div>
 
                     {/* Active Indicator Dot */}
                     {isActive && (
