@@ -1,0 +1,5 @@
+{
+  "name": "Warmwind Interface",
+  "description": "A pixel-perfect recreation of the Warmwind cinematic UI using React, Tailwind CSS, and Framer Motion.",
+  "requestFramePermissions": []
+}
