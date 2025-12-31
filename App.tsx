@@ -76,33 +76,62 @@ const AppContent: React.FC = () => {
     // DEMO TRIGGER: "Simulate Search"
     if (message.toLowerCase().includes("simulate search")) {
       setIsResponding(true);
+      setIsAgenticMode(true); // Ensure Dock is visible/registered
       setShowConversationWidget(true);
       setAgentStatus("thinking");
       setAssistantMessage("Initiating Visual Search Demo...");
-      setAgentSteps(["Opening Chrome", "Clicking Omnibox", "Typing Query"]);
 
-      // 1. Open Chrome
-      if (!openApps.includes("Chrome")) {
-        handleOpenApp("Chrome");
+      // Define the Cognitive Plan
+      const plan = [
+        "Locating Chrome Icon...",
+        "Moving Cursor to Dock...",
+        "Clicking Chrome...",
+        "Waiting for Window...",
+        "Locating Omnibox...",
+        "Typing Query..."
+      ];
+      setAgentSteps(plan);
+
+      // Reset state for demo authenticity
+      if (openApps.includes("Chrome")) {
+        handleCloseApp("Chrome");
       }
 
+      // Execution Loop
       setTimeout(async () => {
-        // 2. Click Omnibox
-        setAgentStatus("clicking");
+        // Step 0: Locate Dock (Implicit) & Move
+        setActiveStepIndex(0);
+        await new Promise(r => setTimeout(r, 800));
+
         setActiveStepIndex(1);
+        setAgentStatus("clicking");
+        // Physical Action: Click Dock Icon
+        await executeAction({ type: 'click', targetId: 'dock-icon-Chrome' });
+
+        setActiveStepIndex(2);
+        await new Promise(r => setTimeout(r, 500));
+
+        setActiveStepIndex(3);
+        setAgentStatus("thinking");
+        // Wait for Window Animation
+        await new Promise(r => setTimeout(r, 2000));
+
+        // Step 4: Locate Omnibox
+        setActiveStepIndex(4);
+        setAgentStatus("clicking");
+        // Physical Action: Click Omnibox (now registered)
         await executeAction({ type: 'click', targetId: 'chrome-omnibox' });
 
-        // 3. Type Query
-        await new Promise(r => setTimeout(r, 500));
+        // Step 5: Type
+        setActiveStepIndex(5);
         setAgentStatus("keyboard");
-        setActiveStepIndex(2);
         await executeAction({ type: 'type', targetId: 'chrome-omnibox', text: "Price of apple s" });
 
-        // 4. Finish
+        // Finish
         setAgentStatus(null);
         setIsResponding(false);
-        setMessages(prev => [...prev, { role: 'assistant', content: "✅ Visual Search Demo Completed" }]);
-      }, 1500);
+        setMessages(prev => [...prev, { role: 'assistant', content: "✅ Physical Visual Search Completed" }]);
+      }, 1000);
       return;
     }
 

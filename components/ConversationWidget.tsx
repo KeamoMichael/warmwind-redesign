@@ -110,10 +110,12 @@ const ConversationWidget: React.FC<ConversationWidgetProps> = ({
                                             <div className="w-1.5 h-1.5 rounded-full bg-[#4db7ae] animate-pulse delay-75" />
                                             <div className="w-1.5 h-1.5 rounded-full bg-[#4db7ae] animate-pulse delay-150" />
                                         </div>
-                                        <span className="text-[15px] font-medium text-neutral-600">
-                                            {agentStatus === 'keyboard' ? 'Typing...' :
-                                                agentStatus === 'clicking' ? 'Interacting...' :
-                                                    isAgenticMode ? 'Working on task...' : 'Thinking...'}
+                                        <span className="text-[15px] font-medium text-neutral-600 truncate max-w-[200px]">
+                                            {(isAgenticMode && activeStepIndex >= 0 && agentSteps[activeStepIndex])
+                                                ? agentSteps[activeStepIndex]
+                                                : agentStatus === 'keyboard' ? 'Typing...'
+                                                    : agentStatus === 'clicking' ? 'Interacting...'
+                                                        : 'Thinking...'}
                                         </span>
                                     </>
                                 ) : (

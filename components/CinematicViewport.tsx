@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChromeWindow } from './ChromeWindow';
 import { AppStore } from './AppStore';
 import ConversationWidget from './ConversationWidget';
+import { useInteraction } from '../contexts/InteractionContext';
 
 interface CinematicViewportProps {
   isResponding: boolean;
@@ -61,6 +62,9 @@ const TopIsland: React.FC<{
   const [showApps, setShowApps] = React.useState(false);
   const [showPlusButton, setShowPlusButton] = React.useState(false);
   const [launchingApp, setLaunchingApp] = React.useState<string | null>(null);
+
+  // Interaction Registry
+  const { registerElement } = useInteraction();
 
   React.useEffect(() => {
     if (isAgenticMode) {
@@ -134,6 +138,14 @@ const TopIsland: React.FC<{
                 return (
                   <motion.div
                     key={app.alt}
+                    ref={(el) => {
+                      if (el instanceof HTMLElement) {
+                        registerElement(`dock-icon-${app.alt}`, el, {
+                          type: 'button',
+                          onFocus: () => handleAppClick(app.alt) // Optional direct invoke
+                        });
+                      }
+                    }}
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: index * 0.05, duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
