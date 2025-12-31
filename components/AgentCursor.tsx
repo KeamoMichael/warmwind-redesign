@@ -32,7 +32,7 @@ const AgentCursor: React.FC<AgentCursorProps> = ({ x, y, isVisible, isDown = fal
                 >
                     <div className="relative flex items-center justify-center">
                         {/* Main Cursor Dot */}
-                        <div className="relative z-20 w-4 h-4 bg-[#4db7ae] rounded-full border-[2px] border-white shadow-md" />
+                        <div className="relative z-20 w-4 h-4 bg-[#4db7ae] rounded-full border-[2px] border-[#a0e8e0] shadow-md" />
 
                         {/* Click Ripple Ripple */}
                         {isDown && (
