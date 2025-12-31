@@ -145,24 +145,33 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
                   >
                     {/* App Icon Container */}
                     <motion.div
-                      animate={isLaunching ? {
-                        translateY: [0, -20, 0],
-                      } : {}}
-                      transition={{
-                        duration: 0.6,
-                        repeat: isLaunching ? Infinity : 0,
-                        ease: [0.42, 0, 0.58, 1]
-                      }}
-                      className={`
-                        w-10 h-10 flex items-center justify-center
-                        transition-all duration-200 ease-out
-                        ${isActive
-                          ? 'scale-90 -translate-y-1 group-hover:scale-95'
+                      animate={
+                        isLaunching
+                          ? { translateY: [0, -12, 0] }
+                          : isActive
+                            ? { scale: 0.9, translateY: -4 }
+                            : { scale: 1, translateY: 0 }
+                      }
+                      whileHover={
+                        isActive
+                          ? { scale: 0.95 }
                           : isLaunching
-                            ? ''
-                            : 'group-hover:-translate-y-1'
-                        }
-                      `}
+                            ? {}
+                            : { translateY: -4 }
+                      }
+                      transition={
+                        isLaunching
+                          ? {
+                            duration: 0.6,
+                            repeat: Infinity,
+                            ease: [0.42, 0, 0.58, 1]
+                          }
+                          : {
+                            duration: 0.2,
+                            ease: "easeOut"
+                          }
+                      }
+                      className="w-10 h-10 flex items-center justify-center"
                     >
                       <img
                         src={app.icon}
