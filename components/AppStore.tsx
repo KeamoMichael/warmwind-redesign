@@ -29,10 +29,10 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall }) => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="w-[800px] h-[700px] bg-black/40 backdrop-blur-3xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col border border-white/10"
+            className="w-[800px] h-[700px] bg-white/20 backdrop-blur-3xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col border border-white/20"
         >
-            {/* Window Title Bar */}
-            <div className="h-11 bg-white/5 backdrop-blur-2xl flex items-center justify-between px-5 shrink-0 border-b border-white/5">
+            {/* Window Title Bar - Extremely Glassy */}
+            <div className="h-11 bg-white/10 backdrop-blur-3xl flex items-center justify-between px-5 shrink-0 border-b border-white/5">
                 {/* Left: App Store Logo & Title */}
                 <div className="flex items-center gap-3">
                     <div className="w-5 h-5 bg-blue-500 rounded-md flex items-center justify-center p-1 shadow-lg shadow-blue-500/20">

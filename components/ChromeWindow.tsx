@@ -12,11 +12,11 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="w-[800px] h-[580px] bg-white/70 backdrop-blur-3xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col border border-white/20"
+            className="w-[800px] h-[580px] bg-white/20 backdrop-blur-3xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col border border-white/20"
             style={{ zIndex: 10 }}
         >
-            {/* Window Title Bar */}
-            <div className="h-11 bg-white/5 backdrop-blur-2xl flex items-center justify-between px-5 shrink-0 border-b border-white/10">
+            {/* Window Title Bar - Extremely Glassy */}
+            <div className="h-11 bg-white/10 backdrop-blur-3xl flex items-center justify-between px-5 shrink-0 border-b border-white/5">
                 {/* Left: Chrome Logo & Title */}
                 <div className="flex items-center gap-3">
                     <img
@@ -24,20 +24,20 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
                         alt="Chrome"
                         className="w-4 h-4 shadow-sm"
                     />
-                    <span className="text-[14px] text-neutral-800/90 font-medium tracking-tight">Chrome</span>
+                    <span className="text-[14px] text-white/90 font-medium tracking-tight">Chrome</span>
                 </div>
 
                 {/* Right: Window Controls */}
                 <div className="flex items-center">
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-black/5 rounded-full transition-all group"
+                        className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-full transition-all group"
                     >
                         <svg
                             width="12"
                             height="12"
                             viewBox="0 0 12 12"
-                            className="text-neutral-500 group-hover:text-neutral-800 transition-colors"
+                            className="text-white/40 group-hover:text-white/80 transition-colors"
                         >
                             <path
                                 d="M2.5 2.5 L9.5 9.5 M9.5 2.5 L2.5 9.5"
@@ -50,14 +50,14 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
                 </div>
             </div>
 
-            {/* Tab Bar */}
-            <div className="h-11 bg-white/10 backdrop-blur-xl flex items-center px-2 shrink-0 border-b border-white/5">
+            {/* Tab Bar - Light Blue/Gray Base */}
+            <div className="h-11 bg-[#DEE1E6]/95 flex items-center px-2 shrink-0 border-b border-black/5">
                 {/* Tabs Container */}
                 <div className="flex items-center gap-1 flex-1">
                     {/* Dropdown Menu */}
-                    <button className="w-6 h-8 flex items-center justify-center hover:bg-white/20 rounded transition-colors">
+                    <button className="w-6 h-8 flex items-center justify-center hover:bg-black/5 rounded transition-colors">
                         <svg width="12" height="8" viewBox="0 0 12 8">
-                            <path d="M6 8L0 0h12z" fill="rgba(255,255,255,0.6)" />
+                            <path d="M6 8L0 0h12z" fill="rgba(0,0,0,0.4)" />
                         </svg>
                     </button>
 
@@ -96,7 +96,7 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
             </div>
 
             {/* Navigation Bar */}
-            <div className="h-12 bg-white/20 backdrop-blur-xl border-b border-white/10 flex items-center px-3 gap-3 shrink-0">
+            <div className="h-12 bg-[#F1F3F4] border-b border-black/5 flex items-center px-3 gap-3 shrink-0">
                 {/* Navigation Buttons */}
                 <div className="flex items-center gap-1">
                     <button className="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors">
@@ -136,7 +136,7 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
                 </div>
 
                 {/* Address Bar */}
-                <div className="flex-1 h-9 bg-white/30 backdrop-blur-md hover:bg-white/40 border border-white/20 rounded-full px-4 flex items-center gap-2 transition-all">
+                <div className="flex-1 h-9 bg-[#E8EAED] border border-transparent rounded-full px-4 flex items-center gap-2 transition-all">
                     <svg width="16" height="16" viewBox="0 0 16 16">
                         <circle cx="6" cy="6" r="5" stroke="rgba(0,0,0,0.4)" strokeWidth="1.5" fill="none" />
                         <path d="M10 10 L14 14" stroke="rgba(0,0,0,0.4)" strokeWidth="1.5" strokeLinecap="round" />
@@ -186,7 +186,7 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
             </div>
 
             {/* Bookmarks Bar */}
-            <div className="h-9 bg-white/10 backdrop-blur-xl border-b border-white/10 flex items-center px-3 gap-2 shrink-0">
+            <div className="h-9 bg-[#F1F3F4] border-b border-black/5 flex items-center px-3 gap-2 shrink-0">
                 <button className="flex items-center gap-2 px-2 h-6 hover:bg-white/20 rounded transition-colors text-neutral-700">
                     <svg width="14" height="14" viewBox="0 0 14 14">
                         <path d="M2 2 V12 H12 V2 Z M2 4 H12" stroke="currentColor" strokeWidth="1.5" fill="none" />
