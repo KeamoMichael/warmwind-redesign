@@ -107,56 +107,51 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
       {/* App Dock - appears after logo exits and island expands */}
       {isAgenticMode && (
         <div className="flex items-center gap-3">
-          {/* Apps */}
-          <AnimatePresence>
-            {showApps && (
+          {/* Apps - render immediately but scale from 0 */}
+          <div className="flex items-center gap-3">
+            {apps.map((app, index) => (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center gap-3"
+                key={app.alt}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{
+                  scale: showApps ? 1 : 0,
+                  opacity: showApps ? 1 : 0
+                }}
+                transition={{
+                  delay: showApps ? index * 0.1 : 0,
+                  duration: 0.5,
+                  ease: [0.4, 0, 0.2, 1]
+                }}
+                className="w-11 h-11 flex items-center justify-center hover:scale-105 transition-transform cursor-pointer shrink-0"
               >
-                {apps.map((app, index) => (
-                  <motion.div
-                    key={app.alt}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{
-                      delay: index * 0.1,
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 15
-                    }}
-                    className="w-11 h-11 flex items-center justify-center hover:scale-105 transition-transform cursor-pointer shrink-0"
-                  >
-                    <img
-                      src={app.icon}
-                      alt={app.alt}
-                      className="w-full h-full object-contain"
-                    />
-                  </motion.div>
-                ))}
+                <img
+                  src={app.icon}
+                  alt={app.alt}
+                  className="w-full h-full object-contain"
+                />
               </motion.div>
-            )}
-          </AnimatePresence>
+            ))}
+          </div>
 
-          {/* Plus Button */}
-          {showPlusButton && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{
-                duration: 0.5,
-                ease: [0.4, 0, 0.2, 1]
-              }}
-              className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all shrink-0"
-            >
-              <img
-                src="/assets/plus button.png"
-                alt="Add"
-                className="w-full h-full object-contain drop-shadow-sm"
-              />
-            </motion.div>
-          )}
+          {/* Plus Button - render immediately but scale from 0 */}
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{
+              scale: showPlusButton ? 1 : 0,
+              opacity: showPlusButton ? 1 : 0
+            }}
+            transition={{
+              duration: 0.5,
+              ease: [0.4, 0, 0.2, 1]
+            }}
+            className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all shrink-0"
+          >
+            <img
+              src="/assets/plus button.png"
+              alt="Add"
+              className="w-full h-full object-contain drop-shadow-sm"
+            />
+          </motion.div>
         </div>
       )}
     </motion.div>
