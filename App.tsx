@@ -13,6 +13,8 @@ const App: React.FC = () => {
   const [agentStatus, setAgentStatus] = React.useState<"thinking" | "keyboard" | "clicking" | null>(null);
   const [cursorPosition, setCursorPosition] = React.useState<{ x: number, y: number }>({ x: 0, y: 0 });
   const [openApps, setOpenApps] = React.useState<string[]>([]);
+  const [messages, setMessages] = React.useState<Array<{ role: 'user' | 'assistant', content: string }>>([]);
+  const [showConversationWidget, setShowConversationWidget] = React.useState(false);
   const responseTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
@@ -46,18 +48,24 @@ const App: React.FC = () => {
 
     if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
 
+    // Add user message to history
+    setMessages(prev => [...prev, { role: 'user', content: message }]);
+
     setIsResponding(true);
+    setShowConversationWidget(true); // Persist widget
     setAgentStatus("thinking");
     setAssistantMessage("Processing request...");
     setActiveStepIndex(-1);
 
     try {
       const result = await processUserMessage(message);
+
       setAssistantMessage(result.message);
+      // Add assistant response to history
+      setMessages(prev => [...prev, { role: 'assistant', content: result.message }]);
 
       if (result.intent === "conversational") {
-        setIsResponding(true);
-        setTimeout(() => setIsResponding(false), 5000);
+        setIsResponding(false); // Stop "thinking" animation, but keep widget open
         setAgentStatus(null);
         return;
       }
@@ -66,8 +74,28 @@ const App: React.FC = () => {
       setIsAgenticMode(true);
       if (result.steps) setAgentSteps(result.steps);
 
+      // If agentic, we keep "isResponding" true while steps execute
       if (result.action?.app) {
-        handleOpenApp(result.action.app);
+        const app = result.action.app;
+
+        switch (app) {
+          case "VS Code":
+            // Launch VS Code locally if installed
+            window.open('vscode://', '_blank');
+            break;
+          case "Gmail":
+            window.open('https://mail.google.com', '_blank');
+            break;
+          case "Docs":
+            window.open('https://docs.new', '_blank');
+            break;
+          case "Chrome":
+          case "App Store":
+          default:
+            // Internal Apps
+            handleOpenApp(app);
+            break;
+        }
       }
 
       setActiveStepIndex(0);
@@ -100,9 +128,11 @@ const App: React.FC = () => {
       cycleSteps(0);
     } catch (error) {
       console.error(error);
-      setAssistantMessage("I'm sorry, I'm having trouble connecting to my brain right now.");
+      const errorMsg = "I'm sorry, I'm having trouble connecting to my brain right now.";
+      setAssistantMessage(errorMsg);
+      setMessages(prev => [...prev, { role: 'assistant', content: errorMsg }]);
       setAgentStatus(null);
-      setTimeout(() => setIsResponding(false), 3000);
+      setIsResponding(false);
     }
   };
 
@@ -133,6 +163,11 @@ const App: React.FC = () => {
           openApps={openApps}
           onOpenApp={handleOpenApp}
           onCloseApp={handleCloseApp}
+          // New Props
+          showConversationWidget={showConversationWidget}
+          messages={messages}
+          onSendMessage={handleSendMessage}
+          onCloseConversationWidget={() => setShowConversationWidget(false)}
         />
       </section>
       <section className="h-20 w-full shrink-0 flex items-center">

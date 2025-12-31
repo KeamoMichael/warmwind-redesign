@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChromeWindow } from './ChromeWindow';
 import { AppStore } from './AppStore';
 import AgentCursor from './AgentCursor';
+import ConversationWidget from './ConversationWidget';
 
 interface CinematicViewportProps {
   isResponding: boolean;
@@ -16,7 +17,15 @@ interface CinematicViewportProps {
   openApps: string[];
   onOpenApp: (appName: string) => void;
   onCloseApp: (appName: string) => void;
+
+  // New Props for Conversation Widget
+  showConversationWidget: boolean;
+  messages: Array<{ role: 'user' | 'assistant', content: string }>;
+  onSendMessage: (message: string) => void;
+  onCloseConversationWidget: () => void;
 }
+
+
 
 const WelcomeText: React.FC = () => {
   const text = "Welcome";
@@ -253,7 +262,11 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   cursorPosition,
   openApps,
   onOpenApp,
-  onCloseApp
+  onCloseApp,
+  showConversationWidget,
+  messages,
+  onSendMessage,
+  onCloseConversationWidget
 }) => {
   const isAgenticState = activeStepIndex >= 0;
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -340,77 +353,22 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
         </div>
       </div>
 
-      {/* Agent Response/Agentic Widget */}
+      {/* Agent Response/Agentic Widget - Persistent & Expandable */}
       <div className="absolute bottom-8 left-0 w-full flex justify-center pointer-events-none z-20 px-4">
         <AnimatePresence mode="wait">
-          {isResponding && (
-            <motion.div
-              layout
-              key={isAgenticState ? "agentic" : "message"}
-              initial={{ height: 60, opacity: 0, scale: 0.95 }}
-              animate={{ height: isAgenticState ? 160 : 60, opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="bg-white rounded-[32px] shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden pointer-events-auto flex items-center justify-center min-w-[320px] max-w-[500px] px-8"
-            >
-              {!isAgenticState ? (
-                /* Initial Message State */
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center justify-center w-full"
-                >
-                  <span className="text-neutral-600 text-[15px] font-light text-center leading-relaxed">
-                    {assistantMessage}
-                  </span>
-                </motion.div>
-              ) : (
-                /* Agentic Steps State */
-                <div className="relative w-full h-full flex items-center justify-center overflow-hidden py-6">
-                  {/* Gradient Fade Masks */}
-                  <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
-
-                  {/* Steps List (Slot Machine Effect) */}
-                  <div className="flex flex-col items-center justify-center h-full w-full">
-                    <AnimatePresence mode="popLayout" initial={false}>
-                      {agentSteps.map((step, idx) => {
-                        const relativePos = idx - activeStepIndex;
-                        // Only show the current step and the next one. Past steps are removed entirely.
-                        if (relativePos < 0 || relativePos > 1) return null;
-
-                        return (
-                          <motion.div
-                            key={step}
-                            initial={{ y: 50, opacity: 0, filter: "blur(8px)" }}
-                            animate={{
-                              y: relativePos === 0 ? 0 : 50, // Active at center, next at bottom
-                              opacity: relativePos === 0 ? 1 : 0.3, // Next step is greyed out
-                              filter: relativePos === 0 ? "blur(0px)" : "blur(2px)",
-                              scale: relativePos === 0 ? 1 : 0.95
-                            }}
-                            exit={{ y: -50, opacity: 0, filter: "blur(8px)" }} // Past steps slide up and out
-                            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                            className="absolute flex items-center gap-3 w-full justify-center px-6"
-                          >
-                            {relativePos === 0 && (
-                              <motion.div
-                                animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
-                                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                                className="w-2.5 h-2.5 rounded-full bg-[#E9516E] shadow-[0_0_12px_rgba(233,81,110,0.5)] shrink-0"
-                              />
-                            )}
-                            <span className={`text-[17px] tracking-tight text-center ${relativePos === 0 ? 'text-neutral-800 font-semibold' : 'text-neutral-400 font-light'}`}>
-                              {step}
-                            </span>
-                          </motion.div>
-                        );
-                      })}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              )}
-            </motion.div>
+          {(showConversationWidget || isResponding) && (
+            <div className="pointer-events-auto">
+              <ConversationWidget
+                messages={messages}
+                agentSteps={agentSteps}
+                activeStepIndex={activeStepIndex}
+                isAgenticMode={isAgenticMode}
+                onSendMessage={onSendMessage}
+                onClose={onCloseConversationWidget}
+                isResponding={isResponding}
+                currentAssistantMessage={assistantMessage}
+              />
+            </div>
           )}
         </AnimatePresence>
       </div>

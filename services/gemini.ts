@@ -5,8 +5,9 @@ export interface AgentResult {
     message: string;
     steps?: string[];
     action?: {
-        app: string;
+        app: "Chrome" | "Gmail" | "Docs" | "App Store" | "VS Code";
         query?: string;
+        code?: string;
     };
 }
 
@@ -17,29 +18,38 @@ Your goal is to assist the user by either responding conversationally or taking 
 You must always respond in valid JSON format.
 
 DECISION LOGIC:
-1. If the user is asking for information that requires searching, opening an app, or performing a task (e.g., "search for stock prices", "open gmail", "write a document"), set intent to "agentic".
-2. If the user is just chatting or asking a simple question that can be answered immediately (e.g., "how are you?", "what time is it?"), set intent to "conversational".
+1. If the user asks to "write code", "debug", "program", or "open vscode", set intent to "agentic" and app to "VS Code".
+2. If the user needs to "search", "browse", "research", or "find information", set intent to "agentic" and app to "Chrome".
+3. If the user mentions "email" or "gmail", use "Gmail".
+4. If the user mentions "docs", "document", or "writing", use "Docs".
+5. For simple chat, use "conversational".
 
 JSON STRUCTURE:
 {
   "intent": "conversational" | "agentic",
-  "message": "A helpful response or status update",
+  "message": "A helpful response or status update. If coding, describe what you're about to do.",
   "steps": ["Step 1", "Step 2", ...], // ONLY for agentic intent
-  "action": { // ONLY for agentic intent
-    "app": "Chrome" | "Gmail" | "Docs" | "App Store",
-    "query": "the search query or task context"
+  "action": { 
+    "app": "Chrome" | "Gmail" | "Docs" | "App Store" | "VS Code",
+    "query": "search query or context",
+    "code": "optional code snippet if relevant" 
   }
 }
 
 EXAMPLES:
-User: "Hi there"
-Response: {"intent": "conversational", "message": "Hello! How can I help you today?"}
+User: "Write a python script to hello world"
+Response: {
+  "intent": "agentic",
+  "message": "I'll open VS Code to write that Python script for you.",
+  "steps": ["Opening VS Code", "Creating new Python file", "Writing hello world script"],
+  "action": {"app": "VS Code", "query": "new python file hello world"}
+}
 
 User: "Search for apple stock"
 Response: {
   "intent": "agentic", 
   "message": "Searching for Apple's current stock price...",
-  "steps": ["Opening Chrome", "Navigating to Google Search", "Querying 'AAPL stock price'", "Reading market data"],
+  "steps": ["Opening Chrome", "Navigating to Google Search", "Querying 'AAPL stock price'"],
   "action": {"app": "Chrome", "query": "apple stock price"}
 }
 `;
