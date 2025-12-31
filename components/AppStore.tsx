@@ -103,10 +103,11 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall }) => {
                                 }}
                                 className="w-10 h-10 flex items-center justify-center bg-neutral-500/30 hover:bg-neutral-500/40 rounded-full transition-all active:scale-90"
                             >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="m6 9 6 6 6-6" />
-                                    <path d="M12 3v12" />
-                                </svg>
+                                <img
+                                    src="/assets/download.png"
+                                    alt="Download"
+                                    className="w-5 h-5 object-contain invert" // Added invert if the PNG is black, to make it white like the UI
+                                />
                             </button>
                         </motion.div>
                     ))}

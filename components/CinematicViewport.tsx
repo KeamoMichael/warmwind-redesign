@@ -400,16 +400,16 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
                             }}
                             exit={{ y: -50, opacity: 0, filter: "blur(8px)" }} // Past steps slide up and out
                             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                            className="absolute flex items-center gap-3 w-full justify-center whitespace-nowrap px-4"
+                            className="absolute flex items-center gap-3 w-full justify-center px-6"
                           >
                             {relativePos === 0 && (
                               <motion.div
                                 animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
                                 transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                                className="w-2.5 h-2.5 rounded-full bg-[#E9516E] shadow-[0_0_12px_rgba(233,81,110,0.5)]"
+                                className="w-2.5 h-2.5 rounded-full bg-[#E9516E] shadow-[0_0_12px_rgba(233,81,110,0.5)] shrink-0"
                               />
                             )}
-                            <span className={`text-[17px] tracking-tight ${relativePos === 0 ? 'text-neutral-800 font-semibold' : 'text-neutral-400 font-light'}`}>
+                            <span className={`text-[17px] tracking-tight text-center ${relativePos === 0 ? 'text-neutral-800 font-semibold' : 'text-neutral-400 font-light'}`}>
                               {step}
                             </span>
                           </motion.div>
