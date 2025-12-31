@@ -80,31 +80,31 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
                     <AnimatePresence mode="popLayout" initial={false}>
                       {agentSteps.map((step, idx) => {
                         const relativePos = idx - activeStepIndex;
-                        // Show current step and the next one
-                        if (relativePos < -1 || relativePos > 1) return null;
+                        // Only show the current step and the next one. Past steps are removed entirely.
+                        if (relativePos < 0 || relativePos > 1) return null;
 
                         return (
                           <motion.div
                             key={step}
-                            initial={{ y: 40, opacity: 0, filter: "blur(4px)" }}
+                            initial={{ y: 50, opacity: 0, filter: "blur(8px)" }}
                             animate={{
-                              y: relativePos === 0 ? 0 : relativePos * 40,
-                              opacity: relativePos === 0 ? 1 : 0.2, // Grey out pending/past
-                              filter: relativePos === 0 ? "blur(0px)" : "blur(1px)",
-                              scale: relativePos === 0 ? 1 : 0.9
+                              y: relativePos === 0 ? 0 : 50, // Active at center, next at bottom
+                              opacity: relativePos === 0 ? 1 : 0.3, // Next step is greyed out
+                              filter: relativePos === 0 ? "blur(0px)" : "blur(2px)",
+                              scale: relativePos === 0 ? 1 : 0.95
                             }}
-                            exit={{ y: -40, opacity: 0, filter: "blur(4px)" }}
-                            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                            className="absolute flex items-center gap-3 w-full justify-center whitespace-nowrap"
+                            exit={{ y: -50, opacity: 0, filter: "blur(8px)" }} // Past steps slide up and out
+                            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                            className="absolute flex items-center gap-3 w-full justify-center whitespace-nowrap px-4"
                           >
                             {relativePos === 0 && (
                               <motion.div
-                                animate={{ scale: [1, 1.4, 1], opacity: [1, 0.4, 1] }}
+                                animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
                                 transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                                className="w-2.5 h-2.5 rounded-full bg-[#E9516E] shadow-[0_0_10px_rgba(233,81,110,0.4)]"
+                                className="w-2.5 h-2.5 rounded-full bg-[#E9516E] shadow-[0_0_12px_rgba(233,81,110,0.5)]"
                               />
                             )}
-                            <span className={`text-[17px] ${relativePos === 0 ? 'text-neutral-700 font-medium' : 'text-neutral-300 font-light'}`}>
+                            <span className={`text-[17px] tracking-tight ${relativePos === 0 ? 'text-neutral-800 font-semibold' : 'text-neutral-400 font-light'}`}>
                               {step}
                             </span>
                           </motion.div>
