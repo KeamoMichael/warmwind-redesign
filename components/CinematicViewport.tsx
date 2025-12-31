@@ -38,6 +38,7 @@ const WelcomeText: React.FC = () => {
 const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
   const [showApps, setShowApps] = React.useState(false);
   const [showPlusButton, setShowPlusButton] = React.useState(false);
+  const [activeApp, setActiveApp] = React.useState<string>("Chrome");
 
   React.useEffect(() => {
     if (isAgenticMode) {
@@ -112,26 +113,52 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
           {/* Apps - only render when ready to show */}
           {showApps && (
             <div className="flex items-center gap-3">
-              {apps.map((app, index) => (
-                <motion.div
-                  key={app.alt}
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{
-                    delay: index * 0.05,
-                    duration: 0.3,
-                    ease: [0.34, 1.56, 0.64, 1]
-                  }}
-                  style={{ willChange: "transform, opacity" }}
-                  className="w-11 h-11 flex items-center justify-center hover:scale-105 transition-transform duration-200 cursor-pointer shrink-0"
-                >
-                  <img
-                    src={app.icon}
-                    alt={app.alt}
-                    className="w-full h-full object-contain"
-                  />
-                </motion.div>
-              ))}
+              {apps.map((app, index) => {
+                const isActive = activeApp === app.alt;
+                return (
+                  <motion.div
+                    key={app.alt}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{
+                      delay: index * 0.05,
+                      duration: 0.3,
+                      ease: [0.34, 1.56, 0.64, 1]
+                    }}
+                    style={{ willChange: "transform, opacity" }}
+                    className="relative flex flex-col items-center group cursor-pointer shrink-0"
+                    onClick={() => setActiveApp(app.alt)}
+                  >
+                    {/* App Icon Container */}
+                    <div
+                      className={`
+                        w-10 h-10 flex items-center justify-center
+                        transition-all duration-200 ease-out
+                        ${isActive
+                          ? 'scale-90 -translate-y-1'
+                          : 'group-hover:-translate-y-2'
+                        }
+                      `}
+                    >
+                      <img
+                        src={app.icon}
+                        alt={app.alt}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+
+                    {/* Active Indicator Dot */}
+                    {isActive && (
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute -bottom-2 w-1 h-1 rounded-full bg-neutral-600"
+                      />
+                    )}
+                  </motion.div>
+                );
+              })}
             </div>
           )}
 
@@ -149,13 +176,15 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
               }
             }}
             style={{ willChange: "opacity" }}
-            className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-200 shrink-0"
+            className="group cursor-pointer shrink-0"
           >
-            <img
-              src="/assets/plus button.png"
-              alt="Add"
-              className="w-full h-full object-contain drop-shadow-sm"
-            />
+            <div className="w-10 h-10 rounded-full flex items-center justify-center transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-95">
+              <img
+                src="/assets/plus button.png"
+                alt="Add"
+                className="w-full h-full object-contain drop-shadow-sm"
+              />
+            </div>
           </motion.div>
         </div>
       )}
