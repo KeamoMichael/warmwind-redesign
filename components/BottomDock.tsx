@@ -30,7 +30,7 @@ const BottomDock: React.FC<BottomDockProps> = ({ onSendMessage, isResponding, on
           <Avatar
             src="/assets/profile-image.png"
             alt="Profile"
-            size="md"
+            className="w-full h-full"
           />
         </div>
       </div>
