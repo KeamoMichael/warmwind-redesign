@@ -84,9 +84,9 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
 
-      <AnimatePresence mode="wait">
-        {!isAgenticMode ? (
-          /* Branding Logo State */
+      {/* Branding Logo - slides out when agentic mode starts */}
+      <AnimatePresence>
+        {!isAgenticMode && (
           <motion.div
             key="logo"
             initial={{ y: 20, opacity: 0 }}
@@ -101,72 +101,64 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
               className="h-5 w-auto object-contain opacity-95 brightness-95"
             />
           </motion.div>
-        ) : (
-          /* App Dock State */
-          <motion.div
-            key="apps"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex items-center gap-3"
-          >
-            {/* Apps */}
-            <AnimatePresence>
-              {showApps && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center gap-3"
-                >
-                  {apps.map((app, index) => (
-                    <motion.div
-                      key={app.alt}
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{
-                        delay: index * 0.1,
-                        type: "spring",
-                        stiffness: 400,
-                        damping: 15
-                      }}
-                      className="w-11 h-11 flex items-center justify-center p-2 rounded-[14px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-neutral-100/50 hover:scale-105 transition-transform cursor-pointer overflow-hidden shrink-0"
-                    >
-                      <img
-                        src={`https://www.google.com/s2/favicons?domain=${app.domain}&sz=128`}
-                        alt={app.alt}
-                        className="w-full h-full object-contain"
-                      />
-                    </motion.div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Plus Button */}
-            <AnimatePresence>
-              {showPlusButton && (
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 20
-                  }}
-                  className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all shrink-0"
-                >
-                  <img
-                    src="/assets/plus button.png"
-                    alt="Add"
-                    className="w-full h-full object-contain drop-shadow-sm"
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
         )}
       </AnimatePresence>
+
+      {/* App Dock - appears after logo exits and island expands */}
+      {isAgenticMode && (
+        <div className="flex items-center gap-3">
+          {/* Apps */}
+          <AnimatePresence>
+            {showApps && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center gap-3"
+              >
+                {apps.map((app, index) => (
+                  <motion.div
+                    key={app.alt}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{
+                      delay: index * 0.1,
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 15
+                    }}
+                    className="w-11 h-11 flex items-center justify-center p-2 rounded-[14px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-neutral-100/50 hover:scale-105 transition-transform cursor-pointer overflow-hidden shrink-0"
+                  >
+                    <img
+                      src={`https://www.google.com/s2/favicons?domain=${app.domain}&sz=128`}
+                      alt={app.alt}
+                      className="w-full h-full object-contain"
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Plus Button */}
+          {showPlusButton && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{
+                duration: 0.5,
+                ease: [0.4, 0, 0.2, 1]
+              }}
+              className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all shrink-0"
+            >
+              <img
+                src="/assets/plus button.png"
+                alt="Add"
+                className="w-full h-full object-contain drop-shadow-sm"
+              />
+            </motion.div>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 };
