@@ -13,6 +13,9 @@ interface CinematicViewportProps {
   isBooting: boolean; // Prop to control the startup reveal
   agentStatus?: "thinking" | "keyboard" | "clicking" | null;
   cursorPosition?: { x: number; y: number };
+  openApps: string[];
+  onOpenApp: (appName: string) => void;
+  onCloseApp: (appName: string) => void;
 }
 
 const WelcomeText: React.FC = () => {
@@ -247,25 +250,13 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   isAgenticMode,
   isBooting,
   agentStatus,
-  cursorPosition
+  cursorPosition,
+  openApps,
+  onOpenApp,
+  onCloseApp
 }) => {
   const isAgenticState = activeStepIndex >= 0;
-  const [openApps, setOpenApps] = React.useState<string[]>([]);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-
-  const handleCloseApp = (appName: string) => {
-    setOpenApps(prev => prev.filter(app => app !== appName));
-  };
-
-  const handleOpenApp = (appName: string) => {
-    if (openApps.includes(appName)) {
-      // If already open, move it to the front (center)
-      setOpenApps(prev => [appName, ...prev.filter(app => app !== appName)]);
-    } else {
-      // Prepend new app to push others to the right
-      setOpenApps(prev => [appName, ...prev]);
-    }
-  };
 
   // Scroll to front when a new app is opened
   React.useEffect(() => {
@@ -305,8 +296,8 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
           <TopIsland
             isAgenticMode={isAgenticMode}
             openApps={openApps}
-            onOpenApp={handleOpenApp}
-            onOpenAppStore={() => handleOpenApp("App Store")}
+            onOpenApp={onOpenApp}
+            onOpenAppStore={() => onOpenApp("App Store")}
           />
         )}
       </div>
@@ -339,9 +330,9 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
                 className="shrink-0 snap-center"
               >
                 {appName === "Chrome" ? (
-                  <ChromeWindow onClose={() => handleCloseApp("Chrome")} />
+                  <ChromeWindow onClose={() => onCloseApp("Chrome")} />
                 ) : appName === "App Store" ? (
-                  <AppStore onClose={() => handleCloseApp("App Store")} onInstall={(name) => handleOpenApp(name)} />
+                  <AppStore onClose={() => onCloseApp("App Store")} onInstall={(name) => onOpenApp(name)} />
                 ) : null}
               </motion.div>
             ))}

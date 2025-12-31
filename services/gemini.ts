@@ -1,0 +1,71 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(API_KEY);
+
+export interface AgentResult {
+    intent: "conversational" | "agentic";
+    message: string;
+    steps?: string[];
+    action?: {
+        app: string;
+        query?: string;
+    };
+}
+
+const SYSTEM_PROMPT = `
+You are Warmwind OS, a highly intelligent and agentic operating system.
+Your goal is to assist the user by either responding conversationally or taking action within the OS.
+
+You must always respond in valid JSON format.
+
+DECISION LOGIC:
+1. If the user is asking for information that requires searching, opening an app, or performing a task (e.g., "search for stock prices", "open gmail", "write a document"), set intent to "agentic".
+2. If the user is just chatting or asking a simple question that can be answered immediately (e.g., "how are you?", "what time is it?"), set intent to "conversational".
+
+JSON STRUCTURE:
+{
+  "intent": "conversational" | "agentic",
+  "message": "A helpful response or status update",
+  "steps": ["Step 1", "Step 2", ...], // ONLY for agentic intent
+  "action": { // ONLY for agentic intent
+    "app": "Chrome" | "Gmail" | "Docs" | "App Store",
+    "query": "the search query or task context"
+  }
+}
+
+EXAMPLES:
+User: "Hi there"
+Response: {"intent": "conversational", "message": "Hello! How can I help you today?"}
+
+User: "Search for apple stock"
+Response: {
+  "intent": "agentic", 
+  "message": "Searching for Apple's current stock price...",
+  "steps": ["Opening Chrome", "Navigating to Google Search", "Querying 'AAPL stock price'", "Reading market data"],
+  "action": {"app": "Chrome", "query": "apple stock price"}
+}
+`;
+
+export async function processUserMessage(message: string): Promise<AgentResult> {
+    if (!API_KEY) {
+        console.error("VITE_GEMINI_API_KEY is not defined");
+        return { intent: "conversational", message: "API Key not configured." };
+    }
+
+    try {
+        const model = genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
+        const result = await model.generateContent([SYSTEM_PROMPT, message]);
+        const response = await result.response;
+        const text = response.text();
+
+        return JSON.parse(text) as AgentResult;
+    } catch (error) {
+        console.error("Gemini API Error:", error);
+        return { intent: "conversational", message: "Sorry, I encountered an error processing your request." };
+    }
+}

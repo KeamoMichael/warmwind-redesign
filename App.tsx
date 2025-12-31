@@ -1,6 +1,7 @@
 import React from 'react';
 import CinematicViewport from './components/CinematicViewport';
 import BottomDock from './components/BottomDock';
+import { processUserMessage } from './services/gemini';
 
 const App: React.FC = () => {
   const [isResponding, setIsResponding] = React.useState(false);
@@ -11,63 +12,85 @@ const App: React.FC = () => {
   const [isBooting, setIsBooting] = React.useState(true);
   const [agentStatus, setAgentStatus] = React.useState<"thinking" | "keyboard" | "clicking" | null>(null);
   const [cursorPosition, setCursorPosition] = React.useState<{ x: number, y: number }>({ x: 0, y: 0 });
+  const [openApps, setOpenApps] = React.useState<string[]>([]);
   const responseTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
     // OS Boot Sequence
-    // 1. Welcome text shows for 4.5s
     const bootTimer = setTimeout(() => {
       setIsBooting(false);
-
-      // 2. Wait for island reveal (1s) + dock reveals (sequential ~2s) + extra delay (2.5s)
-      // Total delay after isBooting false: 5.5s
       const morphTimer = setTimeout(() => {
         setIsAgenticMode(true);
       }, 5500);
-
       return () => clearTimeout(morphTimer);
     }, 4500);
-
     return () => clearTimeout(bootTimer);
   }, []);
 
-  const handleSendMessage = (message: string) => {
-    if (!message.trim()) return;
+  const handleCloseApp = (appName: string) => {
+    setOpenApps(prev => prev.filter(app => app !== appName));
+  };
 
-    setIsResponding(true);
-    setAgentStatus("thinking");
-    setAssistantMessage(`Let me search the ${message} for you.`);
-    setAgentSteps(["Open Browser", `Search ${message}`, "Read Results", "Synthesize Data"]);
-    setActiveStepIndex(-1); // -1 means initial message state
-    setIsAgenticMode(true); // Switch top island to plus mode
+  const handleOpenApp = (appName: string) => {
+    const name = appName === "Docs" ? "Google Docs" : appName;
+    setOpenApps(prev => {
+      if (prev.includes(name)) {
+        return [name, ...prev.filter(app => app !== name)];
+      }
+      return [name, ...prev];
+    });
+  };
+
+  const handleSendMessage = async (message: string) => {
+    if (!message.trim()) return;
 
     if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
 
-    // Initial message shows for 2 seconds
-    responseTimeoutRef.current = setTimeout(() => {
+    setIsResponding(true);
+    setAgentStatus("thinking");
+    setAssistantMessage("Processing request...");
+    setActiveStepIndex(-1);
+
+    try {
+      const result = await processUserMessage(message);
+      setAssistantMessage(result.message);
+
+      if (result.intent === "conversational") {
+        setIsResponding(true);
+        setTimeout(() => setIsResponding(false), 5000);
+        setAgentStatus(null);
+        return;
+      }
+
+      // Agentic Flow
+      setIsAgenticMode(true);
+      if (result.steps) setAgentSteps(result.steps);
+
+      if (result.action?.app) {
+        handleOpenApp(result.action.app);
+      }
+
       setActiveStepIndex(0);
       setAgentStatus("keyboard");
 
-      // Cycle through steps every 1.5 seconds
       const cycleSteps = (index: number) => {
-        if (index < 4) {
+        if (result.steps && index < result.steps.length) {
           responseTimeoutRef.current = setTimeout(() => {
             setActiveStepIndex(index + 1);
 
-            // Simulate agent feedback states
-            if (index === 0) {
-              setAgentStatus("clicking");
-              setCursorPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 - 100 });
-            } else if (index === 1) {
-              setAgentStatus("thinking");
-            } else if (index === 2) {
-              setAgentStatus("keyboard");
-            } else {
-              setAgentStatus(null);
+            const statuses: ("thinking" | "keyboard" | "clicking")[] = ["thinking", "keyboard", "clicking"];
+            const newStatus = statuses[Math.floor(Math.random() * statuses.length)];
+            setAgentStatus(newStatus);
+
+            if (newStatus === "clicking") {
+              setCursorPosition({
+                x: window.innerWidth / 2 + (Math.random() - 0.5) * 400,
+                y: window.innerHeight / 2 + (Math.random() - 0.5) * 200
+              });
             }
 
             cycleSteps(index + 1);
-          }, 1500);
+          }, 2000);
         } else {
           setIsResponding(false);
           setAgentStatus(null);
@@ -75,7 +98,12 @@ const App: React.FC = () => {
       };
 
       cycleSteps(0);
-    }, 2000);
+    } catch (error) {
+      console.error(error);
+      setAssistantMessage("I'm sorry, I'm having trouble connecting to my brain right now.");
+      setAgentStatus(null);
+      setTimeout(() => setIsResponding(false), 3000);
+    }
   };
 
   const handleStop = () => {
@@ -92,7 +120,6 @@ const App: React.FC = () => {
 
   return (
     <main className="h-screen w-full bg-[#F3F3F3] p-4 md:p-6 flex flex-col gap-6 overflow-hidden">
-      {/* Component A: The Cinematic Viewport */}
       <section className="flex-1 w-full relative min-h-0">
         <CinematicViewport
           isResponding={isResponding}
@@ -103,10 +130,11 @@ const App: React.FC = () => {
           isBooting={isBooting}
           agentStatus={agentStatus}
           cursorPosition={cursorPosition}
+          openApps={openApps}
+          onOpenApp={handleOpenApp}
+          onCloseApp={handleCloseApp}
         />
       </section>
-
-      {/* Component B: The Bottom Dock */}
       <section className="h-20 w-full shrink-0 flex items-center">
         <BottomDock
           onSendMessage={handleSendMessage}
