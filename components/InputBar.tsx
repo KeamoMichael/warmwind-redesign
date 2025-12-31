@@ -42,15 +42,19 @@ const InputBar: React.FC<InputBarProps> = ({ onSendMessage, isResponding, onStop
       </div>
 
       <motion.button
-        className="flex items-center justify-center w-10 h-10 shrink-0 ml-2 overflow-hidden"
-        whileTap={{ scale: 0.95 }}
+        className={`flex items-center justify-center w-10 h-10 shrink-0 ml-2 overflow-hidden transition-opacity duration-200 ${isBooting ? 'opacity-30 pointer-events-none' :
+            (inputValue.trim() || isResponding) ? 'opacity-100' : 'opacity-50'
+          }`}
+        whileTap={!isBooting ? { scale: 0.95 } : {}}
         onClick={() => {
+          if (isBooting) return;
           if (inputValue.trim()) {
             handleSend();
           } else if (isResponding) {
             onStop();
           }
         }}
+        disabled={isBooting}
       >
         <img
           src={inputValue.trim() ? "/assets/Send Button.png" : (isResponding ? "/assets/Stop Button.png" : "/assets/Send Button.png")}
