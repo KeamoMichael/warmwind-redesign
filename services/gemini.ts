@@ -5,7 +5,7 @@ export interface AgentResult {
     message: string;
     steps?: string[];
     action?: {
-        app: "Chrome" | "Gmail" | "Docs" | "App Store" | "VS Code";
+        app: "Chrome" | "Gmail" | "Docs" | "Sheets" | "App Store" | "VS Code";
         query?: string;
         code?: string;
     };
@@ -22,7 +22,8 @@ DECISION LOGIC:
 2. If the user needs to "search", "browse", "research", or "find information", set intent to "agentic" and app to "Chrome".
 3. If the user mentions "email" or "gmail", use "Gmail".
 4. If the user mentions "docs", "document", or "writing", use "Docs".
-5. For simple chat, use "conversational".
+5. If the user mentions "sheets", "spreadsheet", or "excel", use "Sheets".
+6. For simple chat, use "conversational".
 
 JSON STRUCTURE:
 {
@@ -30,7 +31,7 @@ JSON STRUCTURE:
   "message": "A helpful response or status update. If coding, describe what you're about to do.",
   "steps": ["Step 1", "Step 2", ...], // ONLY for agentic intent
   "action": { 
-    "app": "Chrome" | "Gmail" | "Docs" | "App Store" | "VS Code",
+    "app": "Chrome" | "Gmail" | "Docs" | "Sheets" | "App Store" | "VS Code",
     "query": "search query or context",
     "code": "optional code snippet if relevant" 
   }

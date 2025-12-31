@@ -161,16 +161,19 @@ const AppContent: React.FC = () => {
 
         // 1. Perception: Check if already open
         if (openApps.includes(appName)) {
-          // Maybe focus it? For now just return
           return;
         }
 
         // 2. Plan: Locate Dock Icon
         const dockIconId = `dock-icon-${appName}`;
 
-        // update UI to show thinking
+        // PUSH REAL-TIME STEPS
         setAgentSteps(prev => [...prev, `Locating ${appName}...`]);
+        // Fix: activeStepIndex is number.
+        // If we append, the new index is length-1.
+        // Actually, let's just increment activeStepIndex.
         setActiveStepIndex(prev => prev + 1);
+
         await new Promise(r => setTimeout(r, 600));
 
         // 3. Act: Move & Click
@@ -185,24 +188,32 @@ const AppContent: React.FC = () => {
         setActiveStepIndex(prev => prev + 1);
         setAgentStatus("thinking");
 
-        // Logic for React state update happens via the component's onClick
-        // We wait for the animation
         await new Promise(r => setTimeout(r, 2000));
       };
 
+
       setIsAgenticMode(true);
-      if (result.steps) setAgentSteps(result.steps);
-      else setAgentSteps(["Processing Intent..."]); // Default step if none provided
+      // SYNC FIX: Do NOT use Gemini steps. Use Real-Time Execution steps.
+      setAgentSteps(["Planning Execution..."]);
+      setActiveStepIndex(0);
 
       if (result.action?.app) {
         const app = result.action.app;
+        // Map "Docs" -> "Google Docs" for display/logic if needed, but "Docs" is the ID.
+        const displayAppName = app === "Docs" ? "Google Docs" : app === "Sheets" ? "Google Sheets" : app;
 
+        // Installation Check
         if (!installedApps.includes(app) && app !== "Chrome" && app !== "App Store") {
-          setAssistantMessage(`I need to install ${app} to do that.`);
-          setMessages(prev => [...prev, { role: 'assistant', content: `I need to install ${app} to do that.` }]);
+          const msg = `${displayAppName} is not installed. I'll open the App Store to install it.`;
+          setAssistantMessage(msg);
+          setMessages(prev => [...prev, { role: 'assistant', content: msg }]);
 
-          // Physical Install? For now, physical open store
+          // Explicit Reasoning Delay
+          await new Promise(r => setTimeout(r, 1500));
+
+          // Physical Install
           await openAppPhysically("App Store");
+
           setAgentStatus(null);
           setIsResponding(false);
           return;
@@ -214,6 +225,7 @@ const AppContent: React.FC = () => {
           case "VS Code":
           case "Gmail":
           case "Docs":
+          case "Sheets": // Added Sheets
           default:
             // UNIVERSAL PHYSICAL HANDLER
             await openAppPhysically(app);
