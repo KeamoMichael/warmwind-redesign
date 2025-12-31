@@ -16,9 +16,9 @@ const BottomDock: React.FC = () => {
 
       {/* Right Area: Profile */}
       <div className="flex items-center justify-end pr-2">
-        <Avatar 
-          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop" 
-          alt="Profile" 
+        <Avatar
+          src="/assets/profile-image.png"
+          alt="Profile"
         />
       </div>
     </div>
