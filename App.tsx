@@ -13,10 +13,20 @@ const App: React.FC = () => {
 
   React.useEffect(() => {
     // OS Boot Sequence
-    const timer = setTimeout(() => {
+    // 1. Welcome text shows for 4.5s
+    const bootTimer = setTimeout(() => {
       setIsBooting(false);
-    }, 4500); // Allow time for character-by-character reveal + display + hide
-    return () => clearTimeout(timer);
+
+      // 2. Wait for island reveal (1s) + dock reveals (sequential ~2s) + extra delay (2.5s)
+      // Total delay after isBooting false: 5.5s
+      const morphTimer = setTimeout(() => {
+        setIsAgenticMode(true);
+      }, 5500);
+
+      return () => clearTimeout(morphTimer);
+    }, 4500);
+
+    return () => clearTimeout(bootTimer);
   }, []);
 
   const handleSendMessage = (message: string) => {

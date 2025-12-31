@@ -80,10 +80,12 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
             width: isBooting ? 0 : "auto"
           }}
           transition={{
+            layout: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
             width: { duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] },
             opacity: { duration: 0.5, delay: 0.5 }
           }}
-          className="pointer-events-auto overflow-hidden flex justify-center"
+          className={`pointer-events-auto overflow-hidden flex justify-center shadow-sm border border-white/20 bg-white/95 backdrop-blur-sm transition-[border-radius] duration-700 ease-[0.22,1,0.36,1] ${isAgenticMode ? "rounded-full" : "rounded-[18px]"
+            }`}
         >
           <AnimatePresence mode="wait">
             {!isAgenticMode ? (
@@ -91,11 +93,11 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
               <motion.div
                 key="logo"
                 layout
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.8, delay: 1.2 }}
-                className="bg-white/95 backdrop-blur-sm px-9 py-5 rounded-[18px] shadow-sm border border-white/20 flex items-center justify-center gap-2"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.6 }}
+                className="px-9 py-5 flex items-center justify-center gap-2"
               >
                 <img
                   src="/assets/warmwind logo text.png"
@@ -108,10 +110,11 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
               <motion.div
                 key="plus"
                 layout
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="bg-white/95 backdrop-blur-md w-[72px] h-[72px] rounded-full shadow-lg border border-white/30 flex items-center justify-center p-1 cursor-pointer hover:scale-105 transition-transform"
+                initial={{ opacity: 0, scale: 0.8, rotate: -90 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={{ opacity: 0, scale: 0.8, rotate: 90 }}
+                transition={{ duration: 0.6 }}
+                className="w-[72px] h-[72px] flex items-center justify-center p-1 cursor-pointer hover:scale-105 transition-transform"
               >
                 <img
                   src="/assets/plus button.png"
