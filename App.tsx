@@ -2,7 +2,7 @@ import React from 'react';
 import CinematicViewport from './components/CinematicViewport';
 import BottomDock from './components/BottomDock';
 import { processUserMessage } from './services/gemini';
-import { InteractionProvider } from './contexts/InteractionContext';
+import { InteractionProvider, useInteraction } from './contexts/InteractionContext';
 import VisualInteractionLayer from './components/VisualInteractionLayer';
 import { useInputController } from './hooks/useInputController';
 
@@ -22,6 +22,7 @@ const AppContent: React.FC = () => {
 
   // Hook enabled now that we are inside the Provider
   const { executeAction } = useInputController();
+  const { updateCursor } = useInteraction();
 
   React.useEffect(() => {
     // OS Boot Sequence
@@ -29,6 +30,7 @@ const AppContent: React.FC = () => {
       setIsBooting(false);
       const morphTimer = setTimeout(() => {
         setIsAgenticMode(true);
+        updateCursor({ isVisible: true });
       }, 5500);
       return () => clearTimeout(morphTimer);
     }, 4500);

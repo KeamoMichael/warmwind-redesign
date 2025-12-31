@@ -34,7 +34,7 @@ export const InteractionProvider: React.FC<{ children: React.ReactNode }> = ({ c
         y: window.innerHeight / 2,
         isDown: false,
         visualState: 'default',
-        isVisible: true,
+        isVisible: false,
     });
 
     const elementsRef = useRef<Map<string, HTMLElement>>(new Map());
