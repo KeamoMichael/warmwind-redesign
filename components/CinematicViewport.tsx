@@ -430,6 +430,35 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
         y={cursorPosition?.y ?? 0}
         isVisible={!!isResponding && agentStatus === 'clicking'}
       />
+
+      {/* Agent Feedback: Inner Screen Glow */}
+      <AnimatePresence>
+        {isResponding && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 pointer-events-none z-[40]"
+          >
+            {/* The actual glow container */}
+            <motion.div
+              animate={{
+                boxShadow: [
+                  "inset 0 0 60px rgba(0, 255, 255, 0.4)",
+                  "inset 0 0 100px rgba(0, 255, 255, 0.6)",
+                  "inset 0 0 60px rgba(0, 255, 255, 0.4)"
+                ]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="w-full h-full rounded-[32px] md:rounded-[40px] border-[3px] border-cyan-400/30"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
