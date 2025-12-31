@@ -30,41 +30,27 @@ const AgentCursor: React.FC<AgentCursorProps> = ({ x, y, isVisible, isDown = fal
                     className="fixed top-0 left-0 pointer-events-none z-[100]"
                     style={{ x, y }} // Use direct style for override
                 >
-                    <div className="relative">
-                        {/* Continuous Pulse Ring for Visibility */}
+                    <div className="relative flex items-center justify-center">
+                        {/* Continuous Pulse Ring (Outer Halo) */}
                         <motion.div
-                            className="absolute inset-0 -z-10 bg-[#4db7ae]/40 rounded-full"
+                            className="absolute bg-[#4db7ae] rounded-full opacity-40"
                             style={{
-                                left: '50%',
-                                top: '50%',
-                                width: '24px',
-                                height: '24px',
-                                x: '-50%',
-                                y: '-50%'
+                                width: '40px',
+                                height: '40px',
                             }}
                             animate={{
-                                scale: [1.2, 1.6, 1.2],
-                                opacity: [0.2, 0.5, 0.2]
+                                scale: [1, 1.5, 1],
+                                opacity: [0.3, 0.6, 0.3]
                             }}
                             transition={{
-                                duration: 1.5,
+                                duration: 2,
                                 repeat: Infinity,
                                 ease: "easeInOut"
                             }}
                         />
 
-                        {/* Glow effect */}
-                        <div className={`absolute -inset-4 rounded-full blur-md bg-[#4db7ae]/30 transition-opacity duration-200 ${isDown ? 'opacity-80' : 'opacity-0'}`} />
-
-                        <svg
-                            width="32"
-                            height="32"
-                            viewBox="0 0 24 24"
-                            className={`drop-shadow-lg transition-colors duration-200 relative z-20 ${isDown ? 'text-[#3da095]' : 'text-[#4db7ae]'}`}
-                            fill="currentColor"
-                        >
-                            <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
-                        </svg>
+                        {/* Main Cursor Dot */}
+                        <div className="relative z-20 w-5 h-5 bg-[#4db7ae] rounded-full border-[2px] border-white shadow-md" />
 
                         {/* Click Ripple Ripple */}
                         {isDown && (
