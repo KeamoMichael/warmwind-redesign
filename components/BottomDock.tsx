@@ -10,13 +10,13 @@ interface BottomDockProps {
 
 const BottomDock: React.FC<BottomDockProps> = ({ onSendMessage, isResponding, onStop }) => {
   return (
-    <div className="w-full max-w-[1800px] mx-auto grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-      {/* Left Area: Empty as requested */}
-      <div className="flex items-center justify-start pl-2">
+    <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center">
+      {/* Left Area: Empty */}
+      <div className="flex items-center justify-start">
       </div>
 
       {/* Center Area: Input Bar */}
-      <div className="flex items-center justify-center w-full">
+      <div className="flex items-center justify-center">
         <InputBar
           onSendMessage={onSendMessage}
           isResponding={isResponding}
@@ -24,12 +24,15 @@ const BottomDock: React.FC<BottomDockProps> = ({ onSendMessage, isResponding, on
         />
       </div>
 
-      {/* Right Area: Profile */}
-      <div className="flex items-center justify-end pr-2">
-        <Avatar
-          src="/assets/profile-image.png"
-          alt="Profile"
-        />
+      {/* Right Area: Profile - Right aligned to parent edge */}
+      <div className="flex items-center justify-end">
+        <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 transition-all duration-300">
+          <Avatar
+            src="/assets/profile-image.png"
+            alt="Profile"
+            size="md"
+          />
+        </div>
       </div>
     </div>
   );
