@@ -1,11 +1,27 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useInteraction } from '../contexts/InteractionContext';
 
 interface ChromeWindowProps {
     onClose: () => void;
 }
 
 export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
+    const { registerElement, unregisterElement } = useInteraction();
+    const [omniboxValue, setOmniboxValue] = React.useState("");
+    const omniboxRef = React.useRef<HTMLInputElement>(null);
+
+    React.useEffect(() => {
+        if (omniboxRef.current) {
+            registerElement('chrome-omnibox', omniboxRef.current, {
+                type: 'input',
+                onInput: (val: string) => setOmniboxValue(val),
+                onFocus: () => omniboxRef.current?.focus()
+            });
+        }
+        return () => unregisterElement('chrome-omnibox');
+    }, [registerElement, unregisterElement]);
+
     return (
         <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -26,7 +42,6 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
                     />
                     <span className="text-[14px] text-white/90 font-medium tracking-tight">Chrome</span>
                 </div>
-
                 {/* Right: Window Controls */}
                 <div className="flex items-center">
                     <button
@@ -68,7 +83,7 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
                             alt="Chrome"
                             className="w-4 h-4"
                         />
-                        <span className="text-sm text-neutral-800 flex-1 truncate">New Tab</span>
+                        <span className="text-sm text-neutral-800 flex-1 truncate">{omniboxValue ? `${omniboxValue} - Google Search` : "New Tab"}</span>
                         <button className="w-5 h-5 hover:bg-black/5 rounded flex items-center justify-center transition-colors">
                             <svg width="10" height="10" viewBox="0 0 10 10">
                                 <path
@@ -136,15 +151,18 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
                 </div>
 
                 {/* Address Bar */}
-                <div className="flex-1 h-9 bg-[#E8EAED] border border-transparent rounded-full px-4 flex items-center gap-2 transition-all">
+                <div className="flex-1 h-9 bg-[#E8EAED] border border-transparent rounded-full px-4 flex items-center gap-2 transition-all focus-within:bg-white focus-within:shadow-md focus-within:border-white/50">
                     <svg width="16" height="16" viewBox="0 0 16 16">
                         <circle cx="6" cy="6" r="5" stroke="rgba(0,0,0,0.4)" strokeWidth="1.5" fill="none" />
                         <path d="M10 10 L14 14" stroke="rgba(0,0,0,0.4)" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
                     <input
+                        ref={omniboxRef}
                         type="text"
                         placeholder="Search Google or type a URL"
-                        className="flex-1 bg-transparent outline-none text-sm text-neutral-800 placeholder-neutral-500"
+                        value={omniboxValue}
+                        onChange={(e) => setOmniboxValue(e.target.value)}
+                        className="flex-1 bg-transparent outline-none text-sm text-neutral-800 placeholder-neutral-500 w-full h-full"
                     />
                 </div>
 
@@ -236,6 +254,8 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
                         <input
                             type="text"
                             placeholder="Search Google or type a URL"
+                            value={omniboxValue}
+                            onChange={(e) => setOmniboxValue(e.target.value)}
                             className="flex-1 bg-transparent outline-none text-base text-neutral-800 placeholder-neutral-500"
                         />
                         <svg width="24" height="24" viewBox="0 0 24 24">

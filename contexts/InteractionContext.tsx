@@ -8,11 +8,18 @@ export interface CursorState {
     isVisible: boolean;
 }
 
+export interface InteractionMetadata {
+    type?: 'button' | 'input' | 'container';
+    onInput?: (value: string) => void;
+    onFocus?: () => void;
+}
+
 export interface InteractionContextType {
     cursor: CursorState;
-    registerElement: (id: string, element: HTMLElement) => void;
+    registerElement: (id: string, element: HTMLElement, metadata?: InteractionMetadata) => void;
     unregisterElement: (id: string) => void;
     getElementBounds: (id: string) => DOMRect | null;
+    getElementMetadata: (id: string) => InteractionMetadata | undefined;
     updateCursor: (newState: Partial<CursorState>) => void;
     // Primitives
     moveCursorTo: (x: number, y: number, duration?: number) => Promise<void>;
@@ -31,21 +38,30 @@ export const InteractionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     });
 
     const elementsRef = useRef<Map<string, HTMLElement>>(new Map());
+    const metadataRef = useRef<Map<string, InteractionMetadata>>(new Map());
 
     // Animation Frame ref for smooth movement
     const animationFrameRef = useRef<number>();
 
-    const registerElement = useCallback((id: string, element: HTMLElement) => {
+    const registerElement = useCallback((id: string, element: HTMLElement, metadata?: InteractionMetadata) => {
         elementsRef.current.set(id, element);
+        if (metadata) {
+            metadataRef.current.set(id, metadata);
+        }
     }, []);
 
     const unregisterElement = useCallback((id: string) => {
         elementsRef.current.delete(id);
+        metadataRef.current.delete(id);
     }, []);
 
     const getElementBounds = useCallback((id: string) => {
         const el = elementsRef.current.get(id);
         return el ? el.getBoundingClientRect() : null;
+    }, []);
+
+    const getElementMetadata = useCallback((id: string) => {
+        return metadataRef.current.get(id);
     }, []);
 
     const updateCursor = useCallback((newState: Partial<CursorState>) => {
@@ -81,9 +97,7 @@ export const InteractionProvider: React.FC<{ children: React.ReactNode }> = ({ c
             if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
             animationFrameRef.current = requestAnimationFrame(animate);
         });
-    }, [cursor.x, cursor.y]); // Note: dependency on cursor.x might cause re-creation, but we need start pos. 
-    // Optimization: use ref for current cursor pos to avoid closure staleness if needed.
-    // Ideally, 'cursor' in dependency array is fine if moveCursorTo is called sequentially.
+    }, [cursor.x, cursor.y]);
 
     const clickArguments = useCallback(async (x: number, y: number) => {
         // 1. Move to (instant or assumed already there)
@@ -113,6 +127,7 @@ export const InteractionProvider: React.FC<{ children: React.ReactNode }> = ({ c
             registerElement,
             unregisterElement,
             getElementBounds,
+            getElementMetadata,
             updateCursor,
             moveCursorTo,
             clickArguments,

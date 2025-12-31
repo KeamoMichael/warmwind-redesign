@@ -9,7 +9,7 @@ export interface AgentAction {
 }
 
 export const useInputController = () => {
-    const { moveCursorTo, clickArguments, getElementBounds } = useInteraction();
+    const { moveCursorTo, clickArguments, getElementBounds, getElementMetadata } = useInteraction();
 
     const executeAction = useCallback(async (action: AgentAction) => {
         switch (action.type) {
@@ -41,17 +41,36 @@ export const useInputController = () => {
                 break;
 
             case 'type':
-                // For typing, typically we assume focus is already set by a previous click
-                // But we can simulate keystrokes if we had a keyboard simulator.
-                // For now, we will just assume the 'click' set focus.
-                // We could emit a synthetic 'input' event if needed.
+                if (!action.text) return;
+
+                if (action.targetId) {
+                    const metadata = getElementMetadata(action.targetId);
+                    if (metadata?.onInput) {
+                        // Simulate character by character typing
+                        const textToType = action.text;
+                        let currentText = "";
+
+                        // NOTE: In a real system we might read initial value. 
+                        // For now we assume typing starts fresh or appends to internal tracked state?
+                        // Let's assume we are typing the 'text' fully.
+
+                        for (let i = 0; i < textToType.length; i++) {
+                            currentText += textToType[i];
+                            metadata.onInput(currentText);
+                            // Random typing delay (human cadence)
+                            await new Promise(r => setTimeout(r, 50 + Math.random() * 80));
+                        }
+                    } else {
+                        console.warn(`Element ${action.targetId} has no onInput handler logic`);
+                    }
+                }
                 break;
 
             case 'wait':
                 await new Promise(r => setTimeout(r, 500));
                 break;
         }
-    }, [moveCursorTo, clickArguments, getElementBounds]);
+    }, [moveCursorTo, clickArguments, getElementBounds, getElementMetadata]);
 
     return { executeAction };
 };

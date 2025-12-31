@@ -73,6 +73,39 @@ const AppContent: React.FC = () => {
 
     setMessages(prev => [...prev, { role: 'user', content: message }]);
 
+    // DEMO TRIGGER: "Simulate Search"
+    if (message.toLowerCase().includes("simulate search")) {
+      setIsResponding(true);
+      setShowConversationWidget(true);
+      setAgentStatus("thinking");
+      setAssistantMessage("Initiating Visual Search Demo...");
+      setAgentSteps(["Opening Chrome", "Clicking Omnibox", "Typing Query"]);
+
+      // 1. Open Chrome
+      if (!openApps.includes("Chrome")) {
+        handleOpenApp("Chrome");
+      }
+
+      setTimeout(async () => {
+        // 2. Click Omnibox
+        setAgentStatus("clicking");
+        setActiveStepIndex(1);
+        await executeAction({ type: 'click', targetId: 'chrome-omnibox' });
+
+        // 3. Type Query
+        await new Promise(r => setTimeout(r, 500));
+        setAgentStatus("keyboard");
+        setActiveStepIndex(2);
+        await executeAction({ type: 'type', targetId: 'chrome-omnibox', text: "Price of apple s" });
+
+        // 4. Finish
+        setAgentStatus(null);
+        setIsResponding(false);
+        setMessages(prev => [...prev, { role: 'assistant', content: "✅ Visual Search Demo Completed" }]);
+      }, 1500);
+      return;
+    }
+
     setIsResponding(true);
     setShowConversationWidget(true);
     setAgentStatus("thinking");
