@@ -24,9 +24,9 @@ const BottomDock: React.FC<BottomDockProps> = ({ onSendMessage, isResponding, on
         />
       </div>
 
-      {/* Right Area: Profile - Right aligned to parent edge */}
-      <div className="flex items-center justify-end">
-        <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 transition-all duration-300">
+      {/* Right Area: Profile - Right aligned with a responsive left offset */}
+      <div className="flex items-center justify-end pr-6 md:pr-10 lg:pr-12">
+        <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0 transition-all duration-300 hover:scale-110 cursor-pointer">
           <Avatar
             src="/assets/profile-image.png"
             alt="Profile"
