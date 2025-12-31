@@ -33,19 +33,19 @@ const AgentCursor: React.FC<AgentCursorProps> = ({ x, y, isVisible, isDown = fal
                     <div className="relative flex items-center justify-center">
                         {/* Continuous Pulse Ring (Outer Halo) */}
                         <motion.div
-                            className="absolute bg-[#4db7ae] rounded-full opacity-40"
+                            className="absolute bg-[#4db7ae] rounded-full"
                             style={{
-                                width: '40px',
-                                height: '40px',
+                                width: '20px',
+                                height: '20px',
                             }}
                             animate={{
-                                scale: [1, 1.5, 1],
-                                opacity: [0.3, 0.6, 0.3]
+                                scale: [0, 2.5],
+                                opacity: [0.8, 0]
                             }}
                             transition={{
-                                duration: 2,
+                                duration: 1.5,
                                 repeat: Infinity,
-                                ease: "easeInOut"
+                                ease: "easeOut"
                             }}
                         />
 
