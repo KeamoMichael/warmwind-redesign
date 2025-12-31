@@ -57,10 +57,10 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
   }, [isAgenticMode]);
 
   const apps = [
-    { domain: "gmail.com", alt: "Gmail" },
-    { domain: "google.com", alt: "Chrome" },
-    { domain: "docs.google.com", alt: "Docs" },
-    { domain: "sheets.google.com", alt: "Sheets" },
+    { icon: "/assets/gmail icon.png", alt: "Gmail" },
+    { icon: "/assets/Chrome-Logo.png", alt: "Chrome" },
+    { icon: "/assets/Google_Docs_logo.png", alt: "Docs" },
+    { icon: "/assets/Google_Sheets_Logo.png", alt: "Sheets" },
   ];
 
   return (
@@ -129,7 +129,7 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
                     className="w-11 h-11 flex items-center justify-center p-2 rounded-[14px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-neutral-100/50 hover:scale-105 transition-transform cursor-pointer overflow-hidden shrink-0"
                   >
                     <img
-                      src={`https://www.google.com/s2/favicons?domain=${app.domain}&sz=128`}
+                      src={app.icon}
                       alt={app.alt}
                       className="w-full h-full object-contain"
                     />
