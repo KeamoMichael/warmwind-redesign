@@ -36,7 +36,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           className="pointer-events-auto"
         >
-          <div className="bg-white/95 backdrop-blur-sm px-10 py-3.5 rounded-[12px] shadow-sm border border-white/20 flex items-center justify-center">
+          <div className="bg-white/95 backdrop-blur-sm px-8 py-5 rounded-[12px] shadow-sm border border-white/20 flex items-center justify-center">
             <img
               src="/assets/warmwind logo text.png"
               alt="warmwind"
