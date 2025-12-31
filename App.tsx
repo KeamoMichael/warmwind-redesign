@@ -150,6 +150,11 @@ const AppContent: React.FC = () => {
             cycleSteps(index + 1);
           }, 2000);
         } else {
+          // Record steps in history
+          if (result.steps && result.steps.length > 0) {
+            const stepsSummary = `✅ Task Completed:\n${result.steps.map(s => `• ${s}`).join('\n')}`;
+            setMessages(prev => [...prev, { role: 'assistant', content: stepsSummary }]);
+          }
           setIsResponding(false);
           setAgentStatus(null);
         }
