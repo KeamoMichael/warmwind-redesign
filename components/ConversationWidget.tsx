@@ -117,6 +117,12 @@ const ConversationWidget: React.FC<ConversationWidgetProps> = ({
                                                     : agentStatus === 'clicking' ? 'Interacting...'
                                                         : 'Thinking...'}
                                         </span>
+                                        {agentStatus === 'clicking' && (
+                                            <img src="/assets/click.png" alt="click" className="w-4 h-4 ml-2 opacity-70" />
+                                        )}
+                                        {agentStatus === 'keyboard' && (
+                                            <img src="/assets/keyboard.png" alt="keyboard" className="w-5 h-5 ml-2 opacity-70" />
+                                        )}
                                     </>
                                 ) : (
                                     <span className="text-[15px] font-medium text-neutral-500">
