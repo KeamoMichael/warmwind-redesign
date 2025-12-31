@@ -204,7 +204,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

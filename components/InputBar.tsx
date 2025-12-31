@@ -6,9 +6,10 @@ interface InputBarProps {
   onSendMessage: (message: string) => void;
   isResponding: boolean;
   onStop: () => void;
+  isBooting: boolean;
 }
 
-const InputBar: React.FC<InputBarProps> = ({ onSendMessage, isResponding, onStop }) => {
+const InputBar: React.FC<InputBarProps> = ({ onSendMessage, isResponding, onStop, isBooting }) => {
   const [inputValue, setInputValue] = React.useState("");
 
   const handleSend = () => {
@@ -40,7 +41,17 @@ const InputBar: React.FC<InputBarProps> = ({ onSendMessage, isResponding, onStop
 
   return (
     <motion.div
-      className="relative flex items-center w-[380px] h-[60px] bg-white rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] pl-6 pr-2"
+      initial={{ width: 0, opacity: 0 }}
+      animate={{
+        width: isBooting ? 0 : 380,
+        opacity: isBooting ? 0 : 1
+      }}
+      transition={{
+        duration: 1.2,
+        delay: isBooting ? 0 : 1.2,
+        ease: [0.22, 1, 0.36, 1]
+      }}
+      className="relative flex items-center h-[60px] bg-white rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.06)] pl-6 pr-2 overflow-hidden"
     >
       <div className="flex-1 flex items-center h-full relative">
         {isResponding ? (
@@ -73,10 +84,18 @@ const InputBar: React.FC<InputBarProps> = ({ onSendMessage, isResponding, onStop
       </div>
 
       <motion.button
+        initial={{ scale: 0 }}
+        animate={{ scale: isBooting ? 0 : 1 }}
+        transition={{
+          duration: 0.5,
+          delay: isBooting ? 0 : 2.2,
+          type: "spring",
+          stiffness: 400,
+          damping: 20
+        }}
         className="flex items-center justify-center w-10 h-10 shrink-0 ml-2 overflow-hidden"
         whileTap={{ scale: 0.95 }}
         onClick={isResponding ? onStop : handleSend}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
       >
         <img
           src={isResponding ? "/assets/Stop Button.png" : "/assets/Send Button.png"}
