@@ -41,10 +41,10 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
 
   React.useEffect(() => {
     if (isAgenticMode) {
-      // Show plus button faster (logo exit is 400ms)
-      const plusTimer = setTimeout(() => setShowPlusButton(true), 600);
-      // Then show apps quickly after
-      const appsTimer = setTimeout(() => setShowApps(true), 800);
+      // Cross-fade: Show plus button almost immediately while logo is fading out
+      const plusTimer = setTimeout(() => setShowPlusButton(true), 50);
+      // Then show apps with slight delay for stagger effect
+      const appsTimer = setTimeout(() => setShowApps(true), 250);
 
       return () => {
         clearTimeout(plusTimer);
@@ -85,7 +85,7 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
 
-      {/* Branding Logo - slides out when agentic mode starts */}
+      {/* Branding Logo - cross-fades out when agentic mode starts */}
       <AnimatePresence>
         {!isAgenticMode && (
           <motion.div
@@ -93,7 +93,7 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             style={{ willChange: "transform, opacity" }}
             className="relative h-11 flex items-center justify-center overflow-hidden"
           >
