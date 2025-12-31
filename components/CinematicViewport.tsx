@@ -35,49 +35,27 @@ const WelcomeText: React.FC = () => {
   );
 };
 
-const BrandingIsland: React.FC = () => (
-  <motion.div
-    key="branding"
-    initial={{ scaleX: 0, opacity: 0 }}
-    animate={{ scaleX: 1, opacity: 1 }}
-    exit={{ scaleX: 0, opacity: 0 }}
-    transition={{
-      scaleX: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
-      opacity: { duration: 0.4 }
-    }}
-    style={{ transformOrigin: "center" }}
-    className="bg-white/95 backdrop-blur-md px-9 py-5 rounded-[24px] shadow-lg border border-white/40 flex items-center justify-center overflow-hidden whitespace-nowrap pointer-events-auto relative"
-  >
-    {/* Gradient Fade Masks */}
-    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
-    <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
+const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
+  const [showApps, setShowApps] = React.useState(false);
+  const [showPlusButton, setShowPlusButton] = React.useState(false);
 
-    {/* Logo with slot machine effect */}
-    <div className="relative h-5 overflow-hidden">
-      <motion.img
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        src="/assets/warmwind logo text.png"
-        alt="warmwind"
-        className="h-5 w-auto object-contain opacity-95 brightness-95"
-      />
-    </div>
-  </motion.div>
-);
+  React.useEffect(() => {
+    if (isAgenticMode) {
+      // First show plus button
+      const plusTimer = setTimeout(() => setShowPlusButton(true), 800);
+      // Then show apps
+      const appsTimer = setTimeout(() => setShowApps(true), 1400);
 
-const AppIcon: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
-  <motion.div
-    layout
-    initial={{ opacity: 0, scale: 0.5 }}
-    animate={{ opacity: 1, scale: 1 }}
-    className="w-11 h-11 flex items-center justify-center p-2 rounded-[14px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-neutral-100/50 hover:scale-105 transition-transform cursor-pointer overflow-hidden shrink-0"
-  >
-    <img src={src} alt={alt} className="w-full h-full object-contain" />
-  </motion.div>
-);
+      return () => {
+        clearTimeout(plusTimer);
+        clearTimeout(appsTimer);
+      };
+    } else {
+      setShowApps(false);
+      setShowPlusButton(false);
+    }
+  }, [isAgenticMode]);
 
-const AgenticIsland: React.FC = () => {
   const apps = [
     { domain: "gmail.com", alt: "Gmail" },
     { domain: "google.com", alt: "Chrome" },
@@ -87,49 +65,108 @@ const AgenticIsland: React.FC = () => {
 
   return (
     <motion.div
-      key="agentic"
+      layout
       initial={{ scaleX: 0, opacity: 0 }}
       animate={{
         scaleX: 1,
-        opacity: 1,
+        opacity: 1
       }}
       exit={{ scaleX: 0, opacity: 0 }}
       transition={{
         scaleX: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
-        opacity: { duration: 0.4 }
+        opacity: { duration: 0.4 },
+        layout: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
       }}
-      style={{
-        transformOrigin: "center",
-        borderRadius: "24px"
-      }}
-      className="bg-white/95 backdrop-blur-md px-5 py-3 shadow-lg border border-white/40 flex items-center justify-center gap-3 overflow-hidden whitespace-nowrap pointer-events-auto"
+      style={{ transformOrigin: "center" }}
+      className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-[24px] shadow-lg border border-white/40 flex items-center justify-center gap-3 overflow-hidden whitespace-nowrap pointer-events-auto relative"
     >
-      <div className="flex items-center gap-3">
-        {apps.map((app, index) => (
-          <motion.div
-            key={app.alt}
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 + index * 0.1, duration: 0.4 }}
-            className="w-11 h-11 flex items-center justify-center p-2 rounded-[14px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-neutral-100/50 hover:scale-105 transition-transform cursor-pointer overflow-hidden shrink-0"
-          >
-            <img src={`https://www.google.com/s2/favicons?domain=${app.domain}&sz=128`} alt={app.alt} className="w-full h-full object-contain" />
-          </motion.div>
-        ))}
-      </div>
+      {/* Gradient Fade Masks */}
+      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.7, duration: 0.4 }}
-        className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all shrink-0"
-      >
-        <img
-          src="/assets/plus button.png"
-          alt="Add"
-          className="w-full h-full object-contain drop-shadow-sm"
-        />
-      </motion.div>
+      <AnimatePresence mode="wait">
+        {!isAgenticMode ? (
+          /* Branding Logo State */
+          <motion.div
+            key="logo"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -20, opacity: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="relative h-5 overflow-hidden px-4"
+          >
+            <img
+              src="/assets/warmwind logo text.png"
+              alt="warmwind"
+              className="h-5 w-auto object-contain opacity-95 brightness-95"
+            />
+          </motion.div>
+        ) : (
+          /* App Dock State */
+          <motion.div
+            key="apps"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex items-center gap-3"
+          >
+            {/* Apps */}
+            <AnimatePresence>
+              {showApps && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center gap-3"
+                >
+                  {apps.map((app, index) => (
+                    <motion.div
+                      key={app.alt}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{
+                        delay: index * 0.1,
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 15
+                      }}
+                      className="w-11 h-11 flex items-center justify-center p-2 rounded-[14px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-neutral-100/50 hover:scale-105 transition-transform cursor-pointer overflow-hidden shrink-0"
+                    >
+                      <img
+                        src={`https://www.google.com/s2/favicons?domain=${app.domain}&sz=128`}
+                        alt={app.alt}
+                        className="w-full h-full object-contain"
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Plus Button */}
+            <AnimatePresence>
+              {showPlusButton && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 500,
+                    damping: 20
+                  }}
+                  className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all shrink-0"
+                >
+                  <img
+                    src="/assets/plus button.png"
+                    alt="Add"
+                    className="w-full h-full object-contain drop-shadow-sm"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
@@ -171,11 +208,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
 
       {/* Top Island (Badge) */}
       <div className="absolute top-8 left-0 w-full flex justify-center pointer-events-none z-20">
-        <AnimatePresence mode="wait">
-          {!isBooting && (
-            !isAgenticMode ? <BrandingIsland /> : <AgenticIsland />
-          )}
-        </AnimatePresence>
+        {!isBooting && <TopIsland isAgenticMode={isAgenticMode} />}
       </div>
 
       {/* Agent Response/Agentic Widget */}
