@@ -153,8 +153,44 @@ const AppContent: React.FC = () => {
         return;
       }
 
+      // Dynamic Physical Execution Engine
+      const openAppPhysically = async (appName: string) => {
+        setIsAgenticMode(true);
+
+        // 1. Perception: Check if already open
+        if (openApps.includes(appName)) {
+          // Maybe focus it? For now just return
+          return;
+        }
+
+        // 2. Plan: Locate Dock Icon
+        const dockIconId = `dock-icon-${appName}`;
+
+        // update UI to show thinking
+        setAgentSteps(prev => [...prev, `Locating ${appName}...`]);
+        setActiveStepIndex(prev => prev + 1);
+        await new Promise(r => setTimeout(r, 600));
+
+        // 3. Act: Move & Click
+        setAgentSteps(prev => [...prev, "Moving to Dock..."]);
+        setActiveStepIndex(prev => prev + 1);
+        setAgentStatus("clicking");
+
+        await executeAction({ type: 'click', targetId: dockIconId });
+
+        // 4. Wait for UI
+        setAgentSteps(prev => [...prev, `Opening ${appName}...`]);
+        setActiveStepIndex(prev => prev + 1);
+        setAgentStatus("thinking");
+
+        // Logic for React state update happens via the component's onClick
+        // We wait for the animation
+        await new Promise(r => setTimeout(r, 2000));
+      };
+
       setIsAgenticMode(true);
       if (result.steps) setAgentSteps(result.steps);
+      else setAgentSteps(["Processing Intent..."]); // Default step if none provided
 
       if (result.action?.app) {
         const app = result.action.app;
@@ -162,26 +198,23 @@ const AppContent: React.FC = () => {
         if (!installedApps.includes(app) && app !== "Chrome" && app !== "App Store") {
           setAssistantMessage(`I need to install ${app} to do that.`);
           setMessages(prev => [...prev, { role: 'assistant', content: `I need to install ${app} to do that.` }]);
-          handleOpenApp("App Store");
+
+          // Physical Install? For now, physical open store
+          await openAppPhysically("App Store");
           setAgentStatus(null);
           setIsResponding(false);
           return;
         }
 
         switch (app) {
-          case "VS Code":
-            window.open('vscode://', '_blank');
-            break;
-          case "Gmail":
-            window.open('https://mail.google.com', '_blank');
-            break;
-          case "Docs":
-            window.open('https://docs.new', '_blank');
-            break;
           case "Chrome":
           case "App Store":
+          case "VS Code":
+          case "Gmail":
+          case "Docs":
           default:
-            handleOpenApp(app);
+            // UNIVERSAL PHYSICAL HANDLER
+            await openAppPhysically(app);
             break;
         }
       }
