@@ -15,6 +15,7 @@ const App: React.FC = () => {
   const [openApps, setOpenApps] = React.useState<string[]>([]);
   const [messages, setMessages] = React.useState<Array<{ role: 'user' | 'assistant', content: string }>>([]);
   const [showConversationWidget, setShowConversationWidget] = React.useState(false);
+  const [installedApps, setInstalledApps] = React.useState<string[]>(["Chrome", "App Store"]);
   const responseTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
@@ -33,8 +34,30 @@ const App: React.FC = () => {
     setOpenApps(prev => prev.filter(app => app !== appName));
   };
 
+  const handleInstallApp = (appName: string) => {
+    if (!installedApps.includes(appName)) {
+      setInstalledApps(prev => [...prev, appName]);
+      // Optional: Auto-open after install?
+      // handleOpenApp(appName); 
+    }
+  };
+
   const handleOpenApp = (appName: string) => {
     const name = appName === "Docs" ? "Google Docs" : appName;
+
+    // Check installation (except Key System Apps)
+    if (!installedApps.includes(name) && name !== "App Store" && name !== "Chrome") {
+      // Not installed? Open App Store
+      setAssistantMessage(`You need to install ${name} from the App Store first.`);
+      setMessages(prev => [...prev, { role: 'assistant', content: `You need to install ${name} from the App Store first.` }]);
+
+      // Open App Store if not open
+      if (!openApps.includes("App Store")) {
+        setOpenApps(prev => ["App Store", ...prev]);
+      }
+      return;
+    }
+
     setOpenApps(prev => {
       if (prev.includes(name)) {
         return [name, ...prev.filter(app => app !== name)];
@@ -77,6 +100,17 @@ const App: React.FC = () => {
       // If agentic, we keep "isResponding" true while steps execute
       if (result.action?.app) {
         const app = result.action.app;
+
+        // Installation Check for External Apps
+        if (!installedApps.includes(app) && app !== "Chrome" && app !== "App Store") {
+          setAssistantMessage(`I need to install ${app} to do that.`);
+          setMessages(prev => [...prev, { role: 'assistant', content: `I need to install ${app} to do that.` }]);
+          handleOpenApp("App Store");
+          // Don't execute the external launch below
+          setAgentStatus(null);
+          setIsResponding(false);
+          return;
+        }
 
         switch (app) {
           case "VS Code":
@@ -161,9 +195,11 @@ const App: React.FC = () => {
           agentStatus={agentStatus}
           cursorPosition={cursorPosition}
           openApps={openApps}
+          // New Props
+          installedApps={installedApps}
           onOpenApp={handleOpenApp}
           onCloseApp={handleCloseApp}
-          // New Props
+          onInstallApp={handleInstallApp}
           showConversationWidget={showConversationWidget}
           messages={messages}
           onSendMessage={handleSendMessage}

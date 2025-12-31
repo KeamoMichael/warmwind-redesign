@@ -19,13 +19,13 @@ interface CinematicViewportProps {
   onCloseApp: (appName: string) => void;
 
   // New Props for Conversation Widget
+  installedApps: string[];
+  onInstallApp: (appName: string) => void;
   showConversationWidget: boolean;
   messages: Array<{ role: 'user' | 'assistant', content: string }>;
   onSendMessage: (message: string) => void;
   onCloseConversationWidget: () => void;
 }
-
-
 
 const WelcomeText: React.FC = () => {
   const text = "Welcome";
@@ -52,23 +52,22 @@ const WelcomeText: React.FC = () => {
   );
 };
 
+// TopIsland definition restored
 const TopIsland: React.FC<{
   isAgenticMode: boolean;
   openApps: string[];
+  installedApps: string[];
   onOpenApp: (appName: string) => void;
   onOpenAppStore: () => void;
-}> = ({ isAgenticMode, openApps, onOpenApp, onOpenAppStore }) => {
+}> = ({ isAgenticMode, openApps, installedApps, onOpenApp, onOpenAppStore }) => {
   const [showApps, setShowApps] = React.useState(false);
   const [showPlusButton, setShowPlusButton] = React.useState(false);
   const [launchingApp, setLaunchingApp] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (isAgenticMode) {
-      // Cross-fade: Show plus button almost immediately while logo is fading out
       const plusTimer = setTimeout(() => setShowPlusButton(true), 50);
-      // Then show apps with slight delay for stagger effect
       const appsTimer = setTimeout(() => setShowApps(true), 250);
-
       return () => {
         clearTimeout(plusTimer);
         clearTimeout(appsTimer);
@@ -80,50 +79,37 @@ const TopIsland: React.FC<{
   }, [isAgenticMode]);
 
   const handleAppClick = (appName: string) => {
-    // Start launching animation
     setLaunchingApp(appName);
-
-    // After bounce animation completes (~1.8s), open the app
     setTimeout(() => {
       setLaunchingApp(null);
-
-      // Only Chrome is implemented - other apps don't open yet
-      if (appName === "Chrome") {
-        onOpenApp(appName);
-      }
+      onOpenApp(appName);
     }, 1800);
   };
 
-  const apps = [
+  const allApps = [
     { icon: "/assets/gmail icon.png", alt: "Gmail" },
     { icon: "/assets/Chrome-Logo.png", alt: "Chrome" },
     { icon: "/assets/Google_Docs_logo.png", alt: "Docs" },
     { icon: "/assets/Google_Sheets_Logo.png", alt: "Sheets" },
+    { icon: "/assets/canva icon.png", alt: "Canva" },
+    { icon: "/assets/chatgpt icon.png", alt: "ChatGPT" },
+    { icon: "/assets/vscode.png", alt: "VS Code" },
   ];
+
+  const visibleApps = allApps.filter(app => installedApps.includes(app.alt) || app.alt === "Chrome");
 
   return (
     <motion.div
       initial={{ scaleX: 0, opacity: 0 }}
-      animate={{
-        scaleX: 1,
-        opacity: 1
-      }}
+      animate={{ scaleX: 1, opacity: 1 }}
       exit={{ scaleX: 0, opacity: 0 }}
-      transition={{
-        scaleX: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
-        opacity: { duration: 0.3 }
-      }}
-      style={{
-        transformOrigin: "center",
-        willChange: "transform, opacity"
-      }}
+      transition={{ scaleX: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }, opacity: { duration: 0.3 } }}
+      style={{ transformOrigin: "center", willChange: "transform, opacity" }}
       className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-[24px] shadow-lg border border-white/40 flex items-center justify-center gap-3 overflow-hidden whitespace-nowrap pointer-events-auto relative"
     >
-      {/* Gradient Fade Masks */}
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
 
-      {/* Branding Logo - cross-fades out when agentic mode starts */}
       <AnimatePresence>
         {!isAgenticMode && (
           <motion.div
@@ -135,77 +121,36 @@ const TopIsland: React.FC<{
             style={{ willChange: "transform, opacity" }}
             className="relative h-11 flex items-center justify-center overflow-hidden"
           >
-            <img
-              src="/assets/warmwind logo text.png"
-              alt="warmwind"
-              className="h-5 w-auto object-contain opacity-95 brightness-95"
-            />
+            <img src="/assets/warmwind logo text.png" alt="warmwind" className="h-5 w-auto object-contain opacity-95 brightness-95" />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* App Dock - appears after logo exits and island expands */}
       {isAgenticMode && (
         <div className="flex items-center gap-3">
-          {/* Apps - only render when ready to show */}
           {showApps && (
             <div className="flex items-center gap-3">
-              {apps.map((app, index) => {
+              {visibleApps.map((app, index) => {
                 const isActive = openApps.includes(app.alt);
                 const isLaunching = launchingApp === app.alt;
-
                 return (
                   <motion.div
                     key={app.alt}
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{
-                      delay: index * 0.05,
-                      duration: 0.3,
-                      ease: [0.34, 1.56, 0.64, 1]
-                    }}
+                    transition={{ delay: index * 0.05, duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
                     style={{ willChange: "transform, opacity" }}
                     className="relative flex flex-col items-center group cursor-pointer shrink-0"
                     onClick={() => handleAppClick(app.alt)}
                   >
-                    {/* App Icon Container */}
                     <motion.div
-                      animate={
-                        isLaunching
-                          ? { translateY: [0, -8, 0] }
-                          : isActive
-                            ? { scale: 0.9, translateY: -4 }
-                            : { scale: 1, translateY: 0 }
-                      }
-                      whileHover={
-                        isActive
-                          ? { scale: 0.95 }
-                          : isLaunching
-                            ? {}
-                            : { translateY: -4 }
-                      }
-                      transition={
-                        isLaunching
-                          ? {
-                            duration: 0.6,
-                            repeat: Infinity,
-                            ease: [0.42, 0, 0.58, 1]
-                          }
-                          : {
-                            duration: 0.2,
-                            ease: "easeOut"
-                          }
-                      }
+                      animate={isLaunching ? { translateY: [0, -8, 0] } : isActive ? { scale: 0.9, translateY: -4 } : { scale: 1, translateY: 0 }}
+                      whileHover={isActive ? { scale: 0.95 } : isLaunching ? {} : { translateY: -4 }}
+                      transition={isLaunching ? { duration: 0.6, repeat: Infinity, ease: [0.42, 0, 0.58, 1] } : { duration: 0.2, ease: "easeOut" }}
                       className="w-10 h-10 flex items-center justify-center"
                     >
-                      <img
-                        src={app.icon}
-                        alt={app.alt}
-                        className="w-full h-full object-contain"
-                      />
+                      <img src={app.icon} alt={app.alt} className="w-full h-full object-contain" />
                     </motion.div>
-
-                    {/* Active Indicator Dot */}
                     {isActive && (
                       <motion.div
                         initial={{ scale: 0, opacity: 0 }}
@@ -219,30 +164,16 @@ const TopIsland: React.FC<{
               })}
             </div>
           )}
-
-          {/* Plus Button - render immediately as placeholder, then animate */}
           <motion.div
             initial={{ scale: 1, opacity: 0 }}
-            animate={{
-              scale: showPlusButton ? 1 : 1,
-              opacity: showPlusButton ? 1 : 0
-            }}
-            transition={{
-              opacity: {
-                duration: 0.3,
-                ease: [0.16, 1, 0.3, 1]
-              }
-            }}
+            animate={{ scale: showPlusButton ? 1 : 1, opacity: showPlusButton ? 1 : 0 }}
+            transition={{ opacity: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } }}
             style={{ willChange: "opacity" }}
             className="group cursor-pointer shrink-0"
             onClick={onOpenAppStore}
           >
             <div className="w-10 h-10 rounded-full flex items-center justify-center transition-transform duration-200 ease-out group-hover:scale-110 group-active:scale-95">
-              <img
-                src="/assets/plus button.png"
-                alt="Add"
-                className="w-full h-full object-contain drop-shadow-sm"
-              />
+              <img src="/assets/plus button.png" alt="Add" className="w-full h-full object-contain drop-shadow-sm" />
             </div>
           </motion.div>
         </div>
@@ -263,6 +194,8 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   openApps,
   onOpenApp,
   onCloseApp,
+  installedApps,
+  onInstallApp,
   showConversationWidget,
   messages,
   onSendMessage,
@@ -309,6 +242,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
           <TopIsland
             isAgenticMode={isAgenticMode}
             openApps={openApps}
+            installedApps={installedApps}
             onOpenApp={onOpenApp}
             onOpenAppStore={() => onOpenApp("App Store")}
           />
@@ -345,7 +279,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
                 {appName === "Chrome" ? (
                   <ChromeWindow onClose={() => onCloseApp("Chrome")} />
                 ) : appName === "App Store" ? (
-                  <AppStore onClose={() => onCloseApp("App Store")} onInstall={(name) => onOpenApp(name)} />
+                  <AppStore onClose={() => onCloseApp("App Store")} onInstall={onInstallApp} />
                 ) : null}
               </motion.div>
             ))}
