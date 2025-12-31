@@ -140,8 +140,9 @@ const ConversationWidget: React.FC<ConversationWidgetProps> = ({
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             className="h-full overflow-y-auto px-6 pt-12 pb-6 scrollbar-hide"
+                            style={{ maskImage: "linear-gradient(to bottom, transparent, black 15%)" }}
                         >
-                            <div className="flex flex-col gap-6">
+                            <div className="flex flex-col gap-6 pt-6">
                                 {messages.map((msg, i) => (
                                     <div
                                         key={i}
