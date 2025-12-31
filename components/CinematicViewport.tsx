@@ -135,8 +135,8 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
                         w-10 h-10 flex items-center justify-center
                         transition-all duration-200 ease-out
                         ${isActive
-                          ? 'scale-90 -translate-y-1'
-                          : 'group-hover:-translate-y-2'
+                          ? 'scale-90 -translate-y-1 group-hover:scale-95'
+                          : 'group-hover:-translate-y-1'
                         }
                       `}
                     >
