@@ -4,9 +4,11 @@ import Avatar from './Avatar';
 
 interface BottomDockProps {
   onSendMessage: (message: string) => void;
+  isResponding: boolean;
+  onStop: () => void;
 }
 
-const BottomDock: React.FC<BottomDockProps> = ({ onSendMessage }) => {
+const BottomDock: React.FC<BottomDockProps> = ({ onSendMessage, isResponding, onStop }) => {
   return (
     <div className="w-full max-w-[1800px] mx-auto grid grid-cols-[1fr_auto_1fr] items-center gap-4">
       {/* Left Area: Empty as requested */}
@@ -15,7 +17,11 @@ const BottomDock: React.FC<BottomDockProps> = ({ onSendMessage }) => {
 
       {/* Center Area: Input Bar */}
       <div className="flex items-center justify-center w-full">
-        <InputBar onSendMessage={onSendMessage} />
+        <InputBar
+          onSendMessage={onSendMessage}
+          isResponding={isResponding}
+          onStop={onStop}
+        />
       </div>
 
       {/* Right Area: Profile */}

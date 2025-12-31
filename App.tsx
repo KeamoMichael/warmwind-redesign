@@ -5,6 +5,7 @@ import BottomDock from './components/BottomDock';
 const App: React.FC = () => {
   const [isResponding, setIsResponding] = React.useState(false);
   const [assistantMessage, setAssistantMessage] = React.useState("");
+  const responseTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const handleSendMessage = (message: string) => {
     if (!message.trim()) return;
@@ -12,10 +13,21 @@ const App: React.FC = () => {
     setIsResponding(true);
     setAssistantMessage(`Let me search the ${message} for you.`);
 
+    // Clear any existing timeout
+    if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
+
     // Simulate response ending after 5 seconds
-    setTimeout(() => {
+    responseTimeoutRef.current = setTimeout(() => {
       setIsResponding(false);
     }, 5000);
+  };
+
+  const handleStop = () => {
+    setIsResponding(false);
+    if (responseTimeoutRef.current) {
+      clearTimeout(responseTimeoutRef.current);
+      responseTimeoutRef.current = null;
+    }
   };
 
   return (
@@ -27,7 +39,11 @@ const App: React.FC = () => {
 
       {/* Component B: The Bottom Dock */}
       <section className="h-20 w-full shrink-0 flex items-center">
-        <BottomDock onSendMessage={handleSendMessage} />
+        <BottomDock
+          onSendMessage={handleSendMessage}
+          isResponding={isResponding}
+          onStop={handleStop}
+        />
       </section>
     </main>
   );
