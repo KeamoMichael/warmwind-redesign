@@ -12,39 +12,38 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="w-[800px] h-[580px] bg-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col border border-neutral-200"
+            className="w-[800px] h-[580px] bg-white/70 backdrop-blur-3xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col border border-white/20"
             style={{ zIndex: 10 }}
         >
             {/* Window Title Bar */}
-            <div className="h-10 bg-[#e8eaed] flex items-center justify-between px-3 shrink-0">
+            <div className="h-11 bg-white/5 backdrop-blur-2xl flex items-center justify-between px-5 shrink-0 border-b border-white/10">
                 {/* Left: Chrome Logo & Title */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                     <img
                         src="/assets/Chrome-Logo.png"
                         alt="Chrome"
-                        className="w-4 h-4"
+                        className="w-4 h-4 shadow-sm"
                     />
-                    <span className="text-sm text-neutral-700 font-medium">Chrome</span>
+                    <span className="text-[14px] text-neutral-800/90 font-medium tracking-tight">Chrome</span>
                 </div>
 
                 {/* Right: Window Controls */}
-                <div className="flex items-center gap-2">
-                    <button className="w-3 h-3 rounded-full hover:bg-neutral-300 transition-colors" />
-                    <button className="w-3 h-3 rounded-full hover:bg-neutral-300 transition-colors" />
+                <div className="flex items-center">
                     <button
                         onClick={onClose}
-                        className="w-3 h-3 rounded-full bg-[#e81123] hover:bg-[#d00515] flex items-center justify-center transition-colors group"
+                        className="w-8 h-8 flex items-center justify-center hover:bg-black/5 rounded-full transition-all group"
                     >
                         <svg
-                            width="6"
-                            height="6"
-                            viewBox="0 0 6 6"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 12 12"
+                            className="text-neutral-500 group-hover:text-neutral-800 transition-colors"
                         >
                             <path
-                                d="M0.5 0.5 L5.5 5.5 M5.5 0.5 L0.5 5.5"
-                                stroke="white"
-                                strokeWidth="1"
+                                d="M2.5 2.5 L9.5 9.5 M9.5 2.5 L2.5 9.5"
+                                stroke="currentColor"
+                                strokeWidth="1.2"
+                                strokeLinecap="round"
                             />
                         </svg>
                     </button>
@@ -52,29 +51,29 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
             </div>
 
             {/* Tab Bar */}
-            <div className="h-11 bg-[#dee1e6] flex items-center px-2 shrink-0">
+            <div className="h-11 bg-white/10 backdrop-blur-xl flex items-center px-2 shrink-0 border-b border-white/5">
                 {/* Tabs Container */}
                 <div className="flex items-center gap-1 flex-1">
                     {/* Dropdown Menu */}
-                    <button className="w-6 h-8 flex items-center justify-center hover:bg-white/30 rounded transition-colors">
+                    <button className="w-6 h-8 flex items-center justify-center hover:bg-white/20 rounded transition-colors">
                         <svg width="12" height="8" viewBox="0 0 12 8">
-                            <path d="M6 8L0 0h12z" fill="#5f6368" />
+                            <path d="M6 8L0 0h12z" fill="rgba(255,255,255,0.6)" />
                         </svg>
                     </button>
 
                     {/* Active Tab */}
-                    <div className="bg-white rounded-t-lg h-9 px-3 flex items-center gap-2 min-w-[200px] shadow-sm">
+                    <div className="bg-white/40 backdrop-blur-md rounded-t-lg h-9 px-3 flex items-center gap-2 min-w-[200px] shadow-sm border border-white/10 border-b-0">
                         <img
                             src="/assets/Chrome-Logo.png"
                             alt="Chrome"
                             className="w-4 h-4"
                         />
-                        <span className="text-sm text-neutral-800 flex-1">New Tab</span>
-                        <button className="w-5 h-5 hover:bg-neutral-200 rounded flex items-center justify-center transition-colors">
+                        <span className="text-sm text-neutral-800 flex-1 truncate">New Tab</span>
+                        <button className="w-5 h-5 hover:bg-black/5 rounded flex items-center justify-center transition-colors">
                             <svg width="10" height="10" viewBox="0 0 10 10">
                                 <path
                                     d="M1 1 L9 9 M9 1 L1 9"
-                                    stroke="#5f6368"
+                                    stroke="currentColor"
                                     strokeWidth="1.5"
                                     strokeLinecap="round"
                                 />
@@ -97,14 +96,14 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
             </div>
 
             {/* Navigation Bar */}
-            <div className="h-12 bg-white border-b border-neutral-200 flex items-center px-3 gap-3 shrink-0">
+            <div className="h-12 bg-white/20 backdrop-blur-xl border-b border-white/10 flex items-center px-3 gap-3 shrink-0">
                 {/* Navigation Buttons */}
                 <div className="flex items-center gap-1">
-                    <button className="w-8 h-8 flex items-center justify-center hover:bg-neutral-100 rounded-full transition-colors">
+                    <button className="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors">
                         <svg width="18" height="18" viewBox="0 0 18 18">
                             <path
                                 d="M10 5 L6 9 L10 13"
-                                stroke="#5f6368"
+                                stroke="rgba(0,0,0,0.6)"
                                 strokeWidth="2"
                                 fill="none"
                                 strokeLinecap="round"
@@ -112,11 +111,11 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
                             />
                         </svg>
                     </button>
-                    <button className="w-8 h-8 flex items-center justify-center hover:bg-neutral-100 rounded-full transition-colors">
+                    <button className="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors">
                         <svg width="18" height="18" viewBox="0 0 18 18">
                             <path
                                 d="M8 5 L12 9 L8 13"
-                                stroke="#5f6368"
+                                stroke="rgba(0,0,0,0.6)"
                                 strokeWidth="2"
                                 fill="none"
                                 strokeLinecap="round"
@@ -124,11 +123,11 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
                             />
                         </svg>
                     </button>
-                    <button className="w-8 h-8 flex items-center justify-center hover:bg-neutral-100 rounded-full transition-colors">
+                    <button className="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors">
                         <svg width="18" height="18" viewBox="0 0 18 18">
                             <path
                                 d="M9 3 A6 6 0 1 1 9 15 A6 6 0 1 1 9 3"
-                                stroke="#5f6368"
+                                stroke="rgba(0,0,0,0.6)"
                                 strokeWidth="2"
                                 fill="none"
                             />
@@ -137,20 +136,16 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
                 </div>
 
                 {/* Address Bar */}
-                <div className="flex-1 h-9 bg-[#f1f3f4] hover:bg-white hover:shadow-md border border-transparent hover:border-neutral-300 rounded-full px-4 flex items-center gap-2 transition-all">
+                <div className="flex-1 h-9 bg-white/30 backdrop-blur-md hover:bg-white/40 border border-white/20 rounded-full px-4 flex items-center gap-2 transition-all">
                     <svg width="16" height="16" viewBox="0 0 16 16">
-                        <circle cx="6" cy="6" r="5" stroke="#5f6368" strokeWidth="1.5" fill="none" />
-                        <path d="M10 10 L14 14" stroke="#5f6368" strokeWidth="1.5" strokeLinecap="round" />
+                        <circle cx="6" cy="6" r="5" stroke="rgba(0,0,0,0.4)" strokeWidth="1.5" fill="none" />
+                        <path d="M10 10 L14 14" stroke="rgba(0,0,0,0.4)" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
                     <input
                         type="text"
                         placeholder="Search Google or type a URL"
                         className="flex-1 bg-transparent outline-none text-sm text-neutral-800 placeholder-neutral-500"
                     />
-                    <svg width="16" height="16" viewBox="0 0 16 16">
-                        <circle cx="8" cy="6" r="2.5" fill="#4285f4" />
-                        <path d="M4 10 Q8 14 12 10" fill="#4285f4" />
-                    </svg>
                 </div>
 
                 {/* Right Icons */}
@@ -191,18 +186,18 @@ export const ChromeWindow: React.FC<ChromeWindowProps> = ({ onClose }) => {
             </div>
 
             {/* Bookmarks Bar */}
-            <div className="h-9 bg-white border-b border-neutral-200 flex items-center px-3 gap-2 shrink-0">
-                <button className="flex items-center gap-2 px-2 h-6 hover:bg-neutral-100 rounded transition-colors">
+            <div className="h-9 bg-white/10 backdrop-blur-xl border-b border-white/10 flex items-center px-3 gap-2 shrink-0">
+                <button className="flex items-center gap-2 px-2 h-6 hover:bg-white/20 rounded transition-colors text-neutral-700">
                     <svg width="14" height="14" viewBox="0 0 14 14">
-                        <path d="M2 2 V12 H12 V2 Z M2 4 H12" stroke="#5f6368" strokeWidth="1.5" fill="none" />
+                        <path d="M2 2 V12 H12 V2 Z M2 4 H12" stroke="currentColor" strokeWidth="1.5" fill="none" />
                     </svg>
-                    <span className="text-xs text-neutral-700">Personal</span>
+                    <span className="text-xs font-medium">Personal</span>
                 </button>
-                <button className="flex items-center gap-2 px-2 h-6 hover:bg-neutral-100 rounded transition-colors">
+                <button className="flex items-center gap-2 px-2 h-6 hover:bg-white/20 rounded transition-colors text-neutral-700">
                     <svg width="14" height="14" viewBox="0 0 14 14">
-                        <path d="M2 2 V12 H12 V2 Z M2 4 H12" stroke="#5f6368" strokeWidth="1.5" fill="none" />
+                        <path d="M2 2 V12 H12 V2 Z M2 4 H12" stroke="currentColor" strokeWidth="1.5" fill="none" />
                     </svg>
-                    <span className="text-xs text-neutral-700">Work</span>
+                    <span className="text-xs font-medium">Work</span>
                 </button>
                 <button className="flex items-center gap-2 px-2 h-6 hover:bg-neutral-100 rounded transition-colors">
                     <img
