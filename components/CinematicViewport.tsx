@@ -147,7 +147,7 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
                     <motion.div
                       animate={
                         isLaunching
-                          ? { translateY: [0, -12, 0] }
+                          ? { translateY: [0, -8, 0] }
                           : isActive
                             ? { scale: 0.9, translateY: -4 }
                             : { scale: 1, translateY: 0 }
