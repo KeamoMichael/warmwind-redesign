@@ -71,60 +71,50 @@ const AppIcon: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
 );
 
 const AgenticIsland: React.FC = () => {
-  // Simulate apps appearing after a small delay to show expansion
-  const [showApps, setShowApps] = React.useState(false);
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => setShowApps(true), 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const apps = showApps ? [
+  const apps = [
     { domain: "gmail.com", alt: "Gmail" },
     { domain: "google.com", alt: "Chrome" },
     { domain: "docs.google.com", alt: "Docs" },
     { domain: "sheets.google.com", alt: "Sheets" },
-  ] : [];
+  ];
 
   return (
     <motion.div
       key="agentic"
-      layout
-      initial={{ width: 0, opacity: 0 }}
+      initial={{ scaleX: 0, opacity: 0 }}
       animate={{
-        width: "auto",
+        scaleX: 1,
         opacity: 1,
       }}
-      exit={{ width: 0, opacity: 0 }}
+      exit={{ scaleX: 0, opacity: 0 }}
       transition={{
-        width: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
-        opacity: { duration: 0.4 },
-        layout: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+        scaleX: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+        opacity: { duration: 0.4 }
       }}
-      style={{ borderRadius: showApps ? "24px" : "100px" }}
-      className="bg-white/95 backdrop-blur-sm px-3 py-3 shadow-sm border border-white/20 flex items-center justify-center gap-3 overflow-hidden whitespace-nowrap pointer-events-auto min-w-[64px]"
+      style={{
+        transformOrigin: "center",
+        borderRadius: "24px"
+      }}
+      className="bg-white/95 backdrop-blur-md px-5 py-3 shadow-lg border border-white/40 flex items-center justify-center gap-3 overflow-hidden whitespace-nowrap pointer-events-auto"
     >
-      <AnimatePresence>
-        {apps.length > 0 && (
+      <div className="flex items-center gap-3">
+        {apps.map((app, index) => (
           <motion.div
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: "auto" }}
-            exit={{ opacity: 0, width: 0 }}
-            className="flex items-center gap-3 pr-2"
+            key={app.alt}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 + index * 0.1, duration: 0.4 }}
+            className="w-11 h-11 flex items-center justify-center p-2 rounded-[14px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-neutral-100/50 hover:scale-105 transition-transform cursor-pointer overflow-hidden shrink-0"
           >
-            {apps.map((app) => (
-              <AppIcon
-                key={app.alt}
-                src={`https://www.google.com/s2/favicons?domain=${app.domain}&sz=128`}
-                alt={app.alt}
-              />
-            ))}
+            <img src={`https://www.google.com/s2/favicons?domain=${app.domain}&sz=128`} alt={app.alt} className="w-full h-full object-contain" />
           </motion.div>
-        )}
-      </AnimatePresence>
+        ))}
+      </div>
 
       <motion.div
-        layout
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.7, duration: 0.4 }}
         className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all shrink-0"
       >
         <img
