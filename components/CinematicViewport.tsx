@@ -41,10 +41,10 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
 
   React.useEffect(() => {
     if (isAgenticMode) {
-      // First show plus button
-      const plusTimer = setTimeout(() => setShowPlusButton(true), 800);
-      // Then show apps
-      const appsTimer = setTimeout(() => setShowApps(true), 1400);
+      // Show plus button faster (logo exit is 400ms)
+      const plusTimer = setTimeout(() => setShowPlusButton(true), 600);
+      // Then show apps quickly after
+      const appsTimer = setTimeout(() => setShowApps(true), 800);
 
       return () => {
         clearTimeout(plusTimer);
@@ -72,10 +72,13 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
       }}
       exit={{ scaleX: 0, opacity: 0 }}
       transition={{
-        scaleX: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
-        opacity: { duration: 0.4 }
+        scaleX: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+        opacity: { duration: 0.3 }
       }}
-      style={{ transformOrigin: "center" }}
+      style={{
+        transformOrigin: "center",
+        willChange: "transform, opacity"
+      }}
       className="bg-white/95 backdrop-blur-md px-5 py-3 rounded-[24px] shadow-lg border border-white/40 flex items-center justify-center gap-3 overflow-hidden whitespace-nowrap pointer-events-auto relative"
     >
       {/* Gradient Fade Masks */}
@@ -90,7 +93,8 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            style={{ willChange: "transform, opacity" }}
             className="relative h-11 flex items-center justify-center overflow-hidden"
           >
             <img
@@ -111,14 +115,15 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
               {apps.map((app, index) => (
                 <motion.div
                   key={app.alt}
-                  initial={{ scale: 0, opacity: 0 }}
+                  initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{
-                    delay: index * 0.1,
-                    duration: 0.5,
-                    ease: [0.4, 0, 0.2, 1]
+                    delay: index * 0.05,
+                    duration: 0.3,
+                    ease: [0.34, 1.56, 0.64, 1]
                   }}
-                  className="w-11 h-11 flex items-center justify-center hover:scale-105 transition-transform cursor-pointer shrink-0"
+                  style={{ willChange: "transform, opacity" }}
+                  className="w-11 h-11 flex items-center justify-center hover:scale-105 transition-transform duration-200 cursor-pointer shrink-0"
                 >
                   <img
                     src={app.icon}
@@ -138,15 +143,13 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
               opacity: showPlusButton ? 1 : 0
             }}
             transition={{
-              scale: {
-                duration: 0.5,
-                ease: [0.4, 0, 0.2, 1]
-              },
               opacity: {
-                duration: 0.3
+                duration: 0.3,
+                ease: [0.16, 1, 0.3, 1]
               }
             }}
-            className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all shrink-0"
+            style={{ willChange: "opacity" }}
+            className="w-11 h-11 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-200 shrink-0"
           >
             <img
               src="/assets/plus button.png"
