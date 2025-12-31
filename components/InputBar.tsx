@@ -14,13 +14,14 @@ const InputBar: React.FC = () => {
       />
 
       <motion.button
-        className="flex items-center justify-center w-10 h-10 bg-[#5DC8B5] rounded-full shrink-0 ml-2"
-        whileTap={{ scale: 0.9, rotate: 10 }}
+        className="flex items-center justify-center w-10 h-10 shrink-0 ml-2 overflow-hidden"
+        whileTap={{ scale: 0.95 }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
       >
-        <Play
-          className="w-3.5 h-3.5 text-white fill-current ml-0.5"
-          strokeWidth={0}
+        <img
+          src="/assets/Send Button.png"
+          alt="Send"
+          className="w-full h-full object-contain"
         />
       </motion.button>
     </motion.div>
