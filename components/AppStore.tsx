@@ -29,100 +29,81 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall }) => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="w-[800px] h-[700px] bg-white/20 backdrop-blur-3xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col border border-white/20"
+            className="w-[850px] h-[750px] bg-white/20 backdrop-blur-3xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col border border-white/20"
         >
-            {/* Window Title Bar - Extremely Glassy */}
-            <div className="h-11 bg-white/10 backdrop-blur-3xl flex items-center justify-between px-5 shrink-0 border-b border-white/5">
-                {/* Left: App Store Title Only */}
-                <div className="flex items-center gap-3">
-                    <span className="text-[14px] text-white/90 font-medium tracking-tight">App Store</span>
-                </div>
+            {/* Unified Header - Exactly like reference */}
+            <div className="pt-8 px-10 pb-6 flex items-center justify-between shrink-0">
+                <span className="text-xl font-medium text-white/90">App Store</span>
 
-                {/* Right: Window Controls */}
-                <div className="flex items-center">
-                    <button
-                        onClick={onClose}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-full transition-all group"
-                    >
-                        <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 12 12"
-                            className="text-white/40 group-hover:text-white/80 transition-colors"
-                        >
-                            <path
-                                d="M2.5 2.5 L9.5 9.5 M9.5 2.5 L2.5 9.5"
-                                stroke="currentColor"
-                                strokeWidth="1.2"
-                                strokeLinecap="round"
-                            />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            {/* Header / Search Area */}
-            <div className="pt-10 px-12 pb-8 flex items-center justify-between">
-                <h1 className="text-2xl font-medium text-white/90">Featured</h1>
-
-                {/* Search Bar */}
-                <div className="flex-1 max-w-sm mx-8">
-                    <div className="relative">
+                {/* Centered Search Bar */}
+                <div className="flex-1 flex justify-center px-4">
+                    <div className="relative w-full max-w-[320px]">
                         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white/40" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white/60" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
                             </svg>
                         </div>
                         <input
                             type="text"
-                            placeholder="Search Apps..."
-                            className="w-full h-11 bg-white/10 hover:bg-white/15 border border-white/5 rounded-2xl pl-12 pr-4 text-white placeholder-white/40 outline-none transition-all focus:bg-white/20"
+                            placeholder="Search..."
+                            className="w-full h-11 bg-black/20 backdrop-blur-md border border-white/5 rounded-full pl-12 pr-4 text-white text-[15px] placeholder-white/40 outline-none transition-all focus:bg-black/30"
                         />
                     </div>
                 </div>
 
-                <div className="w-10" /> {/* Spacer for symmetry */}
+                {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-full transition-all group"
+                >
+                    <svg width="14" height="14" viewBox="0 0 14 14" className="text-white/60 group-hover:text-white/90">
+                        <path d="M2.5 2.5 L11.5 11.5 M11.5 2.5 L2.5 11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                </button>
             </div>
 
-            {/* Grid with Rowing Reveal Animation */}
-            <div className="flex-1 overflow-y-auto px-12 pb-10 custom-scrollbar">
+            {/* Grid Area */}
+            <div className="flex-1 overflow-y-auto px-10 pb-10 custom-scrollbar">
                 <motion.div
                     initial="hidden"
                     animate="visible"
                     variants={{
-                        visible: {
-                            transition: {
-                                staggerChildren: 0.05
-                            }
-                        }
+                        visible: { transition: { staggerChildren: 0.05 } }
                     }}
-                    className="grid grid-cols-2 gap-x-8 gap-y-4"
+                    className="grid grid-cols-2 gap-x-6 gap-y-4"
                 >
                     {storeApps.map((app) => (
                         <motion.div
                             key={app.name}
                             variants={{
-                                hidden: { opacity: 0, y: 20 },
+                                hidden: { opacity: 0, y: 15 },
                                 visible: { opacity: 1, y: 0 }
                             }}
-                            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                            className="bg-white/5 hover:bg-white/10 border border-white/5 rounded-3xl p-4 flex items-center justify-between group cursor-pointer transition-all active:scale-[0.98]"
+                            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                            className="bg-white/10 backdrop-blur-md hover:bg-white/15 border border-white/5 rounded-[28px] p-4 pr-5 flex items-center justify-between group cursor-pointer transition-all active:scale-[0.98]"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                                    <img src={app.icon} alt={app.name} className="w-8 h-8 object-contain" />
-                                </div>
-                                <span className="text-white/90 font-medium text-lg">{app.name}</span>
+                                <img
+                                    src={app.icon}
+                                    alt={app.name}
+                                    className="w-[52px] h-[52px] rounded-2xl object-contain shadow-lg bg-white"
+                                />
+                                <span className="text-white/95 font-normal text-[16px] tracking-tight truncate max-w-[180px]">
+                                    {app.name}
+                                </span>
                             </div>
+
+                            {/* Exact Download Button Style */}
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onInstall(app.name);
                                 }}
-                                className="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all active:scale-90"
+                                className="w-10 h-10 flex items-center justify-center bg-neutral-500/30 hover:bg-neutral-500/40 rounded-full transition-all active:scale-90"
                             >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white/80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M12 17V3m0 14-4-4m4 4 4-4M2 17l.6 2.1c.3.9 1.1 1.5 2 1.5h14.8c.9 0 1.7-.6 2-1.5l.6-2.1" />
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white/80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="m6 9 6 6 6-6" />
+                                    <path d="M12 3v12" />
                                 </svg>
                             </button>
                         </motion.div>
@@ -131,10 +112,8 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall }) => {
             </div>
 
             <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 0px;
-        }
-      `}</style>
+                .custom-scrollbar::-webkit-scrollbar { width: 0px; }
+            `}</style>
         </motion.div>
     );
 };
