@@ -38,24 +38,31 @@ const WelcomeText: React.FC = () => {
 const BrandingIsland: React.FC = () => (
   <motion.div
     key="branding"
-    initial={{ width: 0, opacity: 0 }}
-    animate={{ width: "auto", opacity: 1 }}
-    exit={{ width: 0, opacity: 0 }}
+    initial={{ scaleX: 0, opacity: 0 }}
+    animate={{ scaleX: 1, opacity: 1 }}
+    exit={{ scaleX: 0, opacity: 0 }}
     transition={{
-      width: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
-      opacity: { duration: 0.4 },
-      layout: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+      scaleX: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+      opacity: { duration: 0.4 }
     }}
-    className="bg-white/95 backdrop-blur-sm px-9 py-5 rounded-[24px] shadow-sm border border-white/20 flex items-center justify-center overflow-hidden whitespace-nowrap pointer-events-auto"
+    style={{ transformOrigin: "center" }}
+    className="bg-white/95 backdrop-blur-md px-9 py-5 rounded-[24px] shadow-lg border border-white/40 flex items-center justify-center overflow-hidden whitespace-nowrap pointer-events-auto relative"
   >
-    <motion.img
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.4, duration: 0.6 }}
-      src="/assets/warmwind logo text.png"
-      alt="warmwind"
-      className="h-5 w-auto object-contain opacity-95 brightness-95"
-    />
+    {/* Gradient Fade Masks */}
+    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
+    <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
+
+    {/* Logo with slot machine effect */}
+    <div className="relative h-5 overflow-hidden">
+      <motion.img
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        src="/assets/warmwind logo text.png"
+        alt="warmwind"
+        className="h-5 w-auto object-contain opacity-95 brightness-95"
+      />
+    </div>
   </motion.div>
 );
 
