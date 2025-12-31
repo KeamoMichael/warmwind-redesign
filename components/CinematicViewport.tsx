@@ -126,7 +126,7 @@ const TopIsland: React.FC<{ isAgenticMode: boolean }> = ({ isAgenticMode }) => {
                       stiffness: 400,
                       damping: 15
                     }}
-                    className="w-11 h-11 flex items-center justify-center p-2 rounded-[14px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-neutral-100/50 hover:scale-105 transition-transform cursor-pointer overflow-hidden shrink-0"
+                    className="w-11 h-11 flex items-center justify-center hover:scale-105 transition-transform cursor-pointer shrink-0"
                   >
                     <img
                       src={app.icon}
