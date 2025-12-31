@@ -22,8 +22,8 @@ const VisualInteractionLayer: React.FC = () => {
                         <AgentCursor
                             x={cursor.x}
                             y={cursor.y}
-                            isVisible={true} // Controlled by parent AnimatePresence
-                        // We can extend AgentCursor to support isDown visual state
+                            isVisible={true}
+                            isDown={cursor.isDown}
                         />
                     </motion.div>
                 )}
