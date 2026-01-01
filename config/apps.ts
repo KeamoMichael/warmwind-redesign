@@ -35,7 +35,7 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
     "YouTube": {
         id: "YouTube",
         name: "YouTube",
-        icon: "/assets/Chrome-Logo.png", // Will need YouTube icon
+        icon: "/assets/youtube.png",
         type: 'remote',
         url: "https://youtube.com",
         width: 900,
