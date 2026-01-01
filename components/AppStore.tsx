@@ -22,132 +22,140 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installe
         ? allApps.filter(app => installedApps.includes(app.id))
         : allApps;
 
+    const [downloadingApp, setDownloadingApp] = useState<string | null>(null);
+
+    const handleInstallClick = (appId: string) => {
+        setDownloadingApp(appId);
+        // Simulate download delay
+        setTimeout(() => {
+            onInstall(appId);
+            setDownloadingApp(null);
+        }, 2500);
+    };
+
     return (
         <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="w-[850px] h-[750px] bg-white/20 backdrop-blur-3xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col border border-white/20"
+            className="relative flex items-center justify-center"
         >
-            {/* Unified Header - Exactly like reference */}
-            <div className="pt-8 px-10 pb-6 flex items-center justify-between shrink-0">
-                <span className="text-xl font-medium text-white/90">App Store</span>
-
-                {/* Centered Search Bar */}
-                <div className="flex-1 flex justify-center px-4">
-                    <div className="relative w-full max-w-[320px]">
-                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white/60" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-                            </svg>
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            className="w-full h-11 bg-black/20 backdrop-blur-md border border-white/5 rounded-full pl-12 pr-4 text-white text-[15px] placeholder-white/40 outline-none transition-all focus:bg-black/30"
-                        />
-                    </div>
-                </div>
-
-                {/* Close Button */}
-                <button
-                    onClick={onClose}
-                    className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-full transition-all group"
-                >
-                    <svg width="14" height="14" viewBox="0 0 14 14" className="text-white/60 group-hover:text-white/90">
-                        <path d="M2.5 2.5 L11.5 11.5 M11.5 2.5 L2.5 11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                </button>
-            </div>
-
-            {/* Grid Area */}
-            <div className="flex-1 overflow-y-auto px-10 pb-10 custom-scrollbar">
-                <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    variants={{
-                        visible: { transition: { staggerChildren: 0.05 } }
-                    }}
-                    className="grid grid-cols-2 gap-x-6 gap-y-4"
-                >
-                    {storeApps.map((app) => {
-                        const isInstalled = installedApps.includes(app.id);
-                        const installButtonId = `install - btn - ${app.id.replace(/\s+/g, '-').toLowerCase()} `;
-
-                        return (
-                            <motion.div
-                                key={app.id}
-                                variants={{
-                                    hidden: { opacity: 0, y: 15 },
-                                    visible: { opacity: 1, y: 0 }
-                                }}
-                                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                                className="bg-white/10 backdrop-blur-md hover:bg-white/15 border border-white/5 rounded-[28px] p-4 pr-5 flex items-center justify-between group cursor-pointer transition-all active:scale-[0.98]"
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="w-[52px] h-[52px] rounded-2xl bg-white shadow-lg flex items-center justify-center overflow-hidden p-2">
-                                        <img
-                                            src={app.icon}
-                                            alt={app.name}
-                                            className="w-full h-full object-contain"
-                                            onError={(e) => {
-                                                (e.target as HTMLImageElement).style.display = 'none';
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="text-white/95 font-normal text-[16px] tracking-tight truncate max-w-[180px]">
-                                        {app.name}
-                                    </span>
-                                </div>
-
-                                {/* Install/Open Button */}
-                                <button
-                                    id={installButtonId}
-                                    ref={(el) => {
-                                        if (el && !isInstalled) {
-                                            registerElement(installButtonId, el, { type: 'button' });
-                                            return () => unregisterElement(installButtonId);
-                                        }
-                                    }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (!isInstalled) {
-                                            onInstall(app.id);
-                                        }
-                                    }}
-                                    disabled={isInstalled}
-                                    className={`w-9 h-9 flex items-center justify-center rounded-full transition-all active:scale-90 ${isInstalled
-                                            ? 'bg-teal-500/80'
-                                            : 'bg-neutral-600/60 hover:bg-neutral-600/80'
-                                        }`}
-                                >
-                                    {isInstalled ? (
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                    ) : (
-                                        <img
-                                            src="/assets/download.png"
-                                            alt="Download"
-                                            className="w-4 h-4 object-contain"
-                                        />
-                                    )}
-                                </button>
-                            </motion.div>
-                        );
-                    })}
-                </motion.div>
-            </div>
-
-            {/* Floating Navigation Dock */}
+            {/* Floating Navigation Dock - Now visible because parent lacks overflow-hidden */}
             <AppStoreFloatingDock
                 currentView={currentView}
                 onViewChange={setCurrentView}
             />
 
-            <style jsx>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 0px; }
-            `}</style>
+            {/* Main App Store Window */}
+            <div className="w-[850px] h-[750px] bg-white/20 backdrop-blur-3xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col border border-white/20">
+                {/* Unified Header - Exactly like reference */}
+                <div className="pt-8 px-10 pb-6 flex items-center justify-between shrink-0">
+                    <span className="text-xl font-medium text-white/90">App Store</span>
+
+                    <div className="flex-1 max-w-md mx-8 relative group">
+                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                            <svg className="w-5 h-5 text-white/40 group-focus-within:text-white/70 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            className="w-full bg-black/10 text-white placeholder-white/40 rounded-full py-3.5 pl-12 pr-4 outline-none focus:bg-black/20 transition-all border border-transparent focus:border-white/10"
+                        />
+                    </div>
+
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-white/10 rounded-full transition-colors group"
+                    >
+                        <svg className="w-6 h-6 text-white/60 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* App Grid */}
+                <div className="flex-1 overflow-visible relative px-6 pb-8">
+                    <div className="h-full overflow-y-auto custom-scrollbar px-4">
+                        <div className="grid grid-cols-2 gap-x-5 gap-y-4 pb-20">
+                            {storeApps.map((app) => {
+                                const isInstalled = installedApps.includes(app.id);
+                                const isDownloading = downloadingApp === app.id;
+                                const installButtonId = `install-btn-${app.id.replace(/\s+/g, '-').toLowerCase()}`;
+
+                                return (
+                                    <motion.div
+                                        key={app.id}
+                                        layout
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="bg-white/10 hover:bg-white/15 backdrop-blur-md p-5 rounded-[28px] border border-white/10 flex items-center justify-between group transition-colors"
+                                    >
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-16 h-16 bg-white rounded-2xl p-2.5 shadow-lg flex items-center justify-center shrink-0">
+                                                <img
+                                                    src={app.icon}
+                                                    alt={app.name}
+                                                    className="w-full h-full object-contain"
+                                                />
+                                            </div>
+                                            <span className="text-lg font-medium text-white tracking-wide truncate max-w-[180px]">
+                                                {app.name}
+                                            </span>
+                                        </div>
+
+                                        {/* Install/Open/Download Button */}
+                                        <button
+                                            id={installButtonId}
+                                            ref={(el) => {
+                                                if (el && !isInstalled && !isDownloading) {
+                                                    registerElement(installButtonId, el, { type: 'button' });
+                                                    return () => unregisterElement(installButtonId);
+                                                }
+                                            }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (!isInstalled && !isDownloading) {
+                                                    handleInstallClick(app.id);
+                                                }
+                                            }}
+                                            disabled={isInstalled || isDownloading}
+                                            className={`w-9 h-9 flex items-center justify-center rounded-full transition-all active:scale-90 ${isInstalled
+                                                    ? 'bg-teal-500/80'
+                                                    : isDownloading
+                                                        ? 'bg-transparent border-2 border-white/30'
+                                                        : 'bg-neutral-600/60 hover:bg-neutral-600/80'
+                                                }`}
+                                        >
+                                            {isInstalled ? (
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="20 6 9 17 4 12" />
+                                                </svg>
+                                            ) : isDownloading ? (
+                                                <svg className="animate-spin w-4 h-4 text-white/70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            ) : (
+                                                <img
+                                                    src="/assets/download.png"
+                                                    alt="Download"
+                                                    className="w-4 h-4 object-contain"
+                                                />
+                                            )}
+                                        </button>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+                <style jsx>{`
+                    .custom-scrollbar::-webkit-scrollbar { width: 0px; }
+                `}</style>
+            </div>
         </motion.div>
     );
 };

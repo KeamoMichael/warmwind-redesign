@@ -100,6 +100,7 @@ const TopIsland: React.FC<{
     { icon: "/assets/Chrome-Logo.png", alt: "Chrome" },
     { icon: "/assets/Google_Docs_logo.png", alt: "Docs" },
     { icon: "/assets/Google_Sheets_Logo.png", alt: "Sheets" },
+    { icon: "/assets/youtube.png", alt: "YouTube" },
     { icon: "/assets/canva icon.png", alt: "Canva" },
     { icon: "/assets/chatgpt icon.png", alt: "ChatGPT" },
     { icon: "/assets/vscode.png", alt: "VS Code" },
@@ -228,6 +229,42 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   const isAgenticState = activeStepIndex >= 0;
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
+  // Drag Scroll Logic
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [startX, setStartX] = React.useState(0);
+  const [scrollLeft, setScrollLeft] = React.useState(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // Scroll speed multiplier
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  React.useEffect(() => {
+    if (scrollContainerRef.current) {
+      // Center initial View
+      const el = scrollContainerRef.current;
+      el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+    }
+  }, [openApps.length]);
+
   // Scroll to front when a new app is opened
   React.useEffect(() => {
     if (scrollContainerRef.current) {
@@ -277,8 +314,12 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
       <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none z-10">
         <div
           ref={scrollContainerRef}
-          className="flex items-center gap-20 px-[calc(50vw-400px)] pointer-events-auto overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full py-20"
-          style={{ scrollBehavior: 'smooth' }}
+          className={`flex items-center gap-20 px-[calc(50vw-400px)] pointer-events-auto overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full py-20 ${isDragging ? 'cursor-grabbing snap-none' : 'cursor-grab'}`}
+          style={{ scrollBehavior: isDragging ? 'auto' : 'smooth' }}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
         >
           <AnimatePresence mode="popLayout">
             {openApps.map((appName, index) => (
