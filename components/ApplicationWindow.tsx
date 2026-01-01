@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { AppManifest } from '../config/apps';
+import RemoteDesktopView from './RemoteDesktopView';
 
 interface ApplicationWindowProps {
     app: AppManifest;
@@ -49,7 +50,9 @@ export const ApplicationWindow: React.FC<ApplicationWindowProps> = ({ app, onClo
 
             {/* Content Area */}
             <div className="flex-1 bg-white relative">
-                {app.type === 'iframe' && app.url ? (
+                {app.type === 'remote' ? (
+                    <RemoteDesktopView appName={app.name} />
+                ) : app.type === 'iframe' && app.url ? (
                     <iframe
                         src={app.url}
                         className="w-full h-full border-none"

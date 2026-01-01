@@ -6,7 +6,7 @@ export interface AppManifest {
     id: string;
     name: string;
     icon: string;
-    type: 'native' | 'iframe';
+    type: 'native' | 'iframe' | 'remote';
     component?: React.FC<any>;
     url?: string;
     width?: number;
@@ -36,7 +36,7 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         id: "VS Code",
         name: "VS Code",
         icon: "/assets/vscode.png",
-        type: 'iframe',
+        type: 'remote',
         url: "https://vscode.dev",
         width: 900,
         height: 650
@@ -45,7 +45,7 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         id: "Gmail",
         name: "Gmail",
         icon: "/assets/gmail icon.png",
-        type: 'iframe',
+        type: 'remote',
         url: "https://mail.google.com/mail/mu/mp/",
         width: 800,
         height: 600
@@ -54,7 +54,7 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         id: "Docs",
         name: "Google Docs",
         icon: "/assets/Google_Docs_logo.png",
-        type: 'iframe',
+        type: 'remote',
         url: "https://docs.google.com/document/u/0/",
         width: 850,
         height: 650
@@ -63,7 +63,7 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         id: "Sheets",
         name: "Google Sheets",
         icon: "/assets/Google_Sheets_Logo.png",
-        type: 'iframe',
+        type: 'remote',
         url: "https://docs.google.com/spreadsheets/u/0/",
         width: 850,
         height: 650
