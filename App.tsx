@@ -2,6 +2,7 @@ import React from 'react';
 import CinematicViewport from './components/CinematicViewport';
 import BottomDock from './components/BottomDock';
 import { processUserMessage } from './services/gemini';
+import { APP_REGISTRY } from './config/apps';
 import { InteractionProvider, useInteraction } from './contexts/InteractionContext';
 import VisualInteractionLayer from './components/VisualInteractionLayer';
 import { useInputController } from './hooks/useInputController';
@@ -144,7 +145,10 @@ const AppContent: React.FC = () => {
     setActiveStepIndex(-1);
 
     try {
-      const result = await processUserMessage(message);
+      const result = await processUserMessage(message, {
+        installedApps,
+        supportedApps: Object.keys(APP_REGISTRY)
+      });
 
       setAssistantMessage(result.message);
       setMessages(prev => [...prev, { role: 'assistant', content: result.message }]);
