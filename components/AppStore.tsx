@@ -116,20 +116,20 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installe
                                         }
                                     }}
                                     disabled={isInstalled}
-                                    className={`w - 10 h - 10 flex items - center justify - center rounded - full transition - all active: scale - 90 ${isInstalled
-                                        ? 'bg-emerald-500/30 cursor-default'
-                                        : 'bg-neutral-500/30 hover:bg-neutral-500/40'
-                                        } `}
+                                    className={`w-9 h-9 flex items-center justify-center rounded-full transition-all active:scale-90 ${isInstalled
+                                            ? 'bg-teal-500/80'
+                                            : 'bg-neutral-600/60 hover:bg-neutral-600/80'
+                                        }`}
                                 >
                                     {isInstalled ? (
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                             <polyline points="20 6 9 17 4 12" />
                                         </svg>
                                     ) : (
                                         <img
                                             src="/assets/download.png"
                                             alt="Download"
-                                            className="w-5 h-5 object-contain invert"
+                                            className="w-4 h-4 object-contain"
                                         />
                                     )}
                                 </button>
