@@ -303,7 +303,11 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
                 {appName === "Chrome" ? (
                   <ChromeWindow onClose={() => onCloseApp("Chrome")} />
                 ) : appName === "App Store" ? (
-                  <AppStore onClose={() => onCloseApp("App Store")} onInstall={onInstallApp} />
+                  <AppStore
+                    onClose={() => onCloseApp("App Store")}
+                    onInstall={onInstallApp}
+                    installedApps={installedApps}
+                  />
                 ) : (
                   APP_REGISTRY[appName] ? (
                     <ApplicationWindow

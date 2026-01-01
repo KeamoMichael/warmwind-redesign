@@ -1,28 +1,19 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useInteraction } from '../contexts/InteractionContext';
+import { APP_REGISTRY } from '../config/apps';
 
 interface AppStoreProps {
     onClose: () => void;
     onInstall: (appName: string) => void;
+    installedApps: string[];
 }
 
-export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall }) => {
-    const storeApps = [
-        { name: "Amazon", icon: "/assets/amazon icon.png" }, // Assuming asset exists or will be added
-        { name: "Canva", icon: "/assets/canva icon.png" },
-        { name: "ChatGPT", icon: "/assets/chatgpt icon.png" },
-        { name: "Chrome", icon: "/assets/Chrome-Logo.png" },
-        { name: "Cryptped", icon: "/assets/cryptped icon.png" },
-        { name: "DuckDuckGo", icon: "/assets/duckduckgo icon.png" },
-        { name: "Ebay", icon: "/assets/ebay icon.png" },
-        { name: "Gmail", icon: "/assets/gmail icon.png" },
-        { name: "Firebase Studio", icon: "/assets/firebase icon.png" },
-        { name: "Google Calendar", icon: "/assets/Google_Calendar_logo.png" },
-        { name: "Google Docs", icon: "/assets/Google_Docs_logo.png" },
-        { name: "Google Drive", icon: "/assets/Google_Drive_logo.png" },
-        { name: "Google Sheets", icon: "/assets/Google_Sheets_Logo.png" },
-        { name: "Google Slides", icon: "/assets/Google_Slides_Logo.png" },
-    ];
+export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installedApps }) => {
+    const { registerElement, unregisterElement } = useInteraction();
+
+    // Use APP_REGISTRY for store apps
+    const storeApps = Object.values(APP_REGISTRY).filter(app => app.id !== "App Store");
 
     return (
         <motion.div
@@ -72,45 +63,72 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall }) => {
                     }}
                     className="grid grid-cols-2 gap-x-6 gap-y-4"
                 >
-                    {storeApps.map((app) => (
-                        <motion.div
-                            key={app.name}
-                            variants={{
-                                hidden: { opacity: 0, y: 15 },
-                                visible: { opacity: 1, y: 0 }
-                            }}
-                            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                            className="bg-white/10 backdrop-blur-md hover:bg-white/15 border border-white/5 rounded-[28px] p-4 pr-5 flex items-center justify-between group cursor-pointer transition-all active:scale-[0.98]"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="w-[52px] h-[52px] rounded-2xl bg-white shadow-lg flex items-center justify-center overflow-hidden p-2">
-                                    <img
-                                        src={app.icon}
-                                        alt={app.name}
-                                        className="w-full h-full object-contain"
-                                    />
-                                </div>
-                                <span className="text-white/95 font-normal text-[16px] tracking-tight truncate max-w-[180px]">
-                                    {app.name}
-                                </span>
-                            </div>
+                    {storeApps.map((app) => {
+                        const isInstalled = installedApps.includes(app.id);
+                        const installButtonId = `install-btn-${app.id.replace(/\s+/g, '-').toLowerCase()}`;
 
-                            {/* Exact Download Button Style */}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onInstall(app.name);
+                        return (
+                            <motion.div
+                                key={app.id}
+                                variants={{
+                                    hidden: { opacity: 0, y: 15 },
+                                    visible: { opacity: 1, y: 0 }
                                 }}
-                                className="w-10 h-10 flex items-center justify-center bg-neutral-500/30 hover:bg-neutral-500/40 rounded-full transition-all active:scale-90"
+                                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                                className="bg-white/10 backdrop-blur-md hover:bg-white/15 border border-white/5 rounded-[28px] p-4 pr-5 flex items-center justify-between group cursor-pointer transition-all active:scale-[0.98]"
                             >
-                                <img
-                                    src="/assets/download.png"
-                                    alt="Download"
-                                    className="w-5 h-5 object-contain invert" // Added invert if the PNG is black, to make it white like the UI
-                                />
-                            </button>
-                        </motion.div>
-                    ))}
+                                <div className="flex items-center gap-4">
+                                    <div className="w-[52px] h-[52px] rounded-2xl bg-white shadow-lg flex items-center justify-center overflow-hidden p-2">
+                                        <img
+                                            src={app.icon}
+                                            alt={app.name}
+                                            className="w-full h-full object-contain"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).style.display = 'none';
+                                            }}
+                                        />
+                                    </div>
+                                    <span className="text-white/95 font-normal text-[16px] tracking-tight truncate max-w-[180px]">
+                                        {app.name}
+                                    </span>
+                                </div>
+
+                                {/* Install/Open Button */}
+                                <button
+                                    id={installButtonId}
+                                    ref={(el) => {
+                                        if (el && !isInstalled) {
+                                            registerElement(installButtonId, el, { type: 'button' });
+                                            return () => unregisterElement(installButtonId);
+                                        }
+                                    }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!isInstalled) {
+                                            onInstall(app.id);
+                                        }
+                                    }}
+                                    disabled={isInstalled}
+                                    className={`w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-90 ${isInstalled
+                                            ? 'bg-emerald-500/30 cursor-default'
+                                            : 'bg-neutral-500/30 hover:bg-neutral-500/40'
+                                        }`}
+                                >
+                                    {isInstalled ? (
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                    ) : (
+                                        <img
+                                            src="/assets/download.png"
+                                            alt="Download"
+                                            className="w-5 h-5 object-contain invert"
+                                        />
+                                    )}
+                                </button>
+                            </motion.div>
+                        );
+                    })}
                 </motion.div>
             </div>
 
