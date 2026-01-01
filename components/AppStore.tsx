@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInteraction } from '../contexts/InteractionContext';
 import { APP_REGISTRY } from '../config/apps';
+import { AppStoreFloatingDock } from './AppStoreFloatingDock';
 
 interface AppStoreProps {
     onClose: () => void;
@@ -11,9 +12,15 @@ interface AppStoreProps {
 
 export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installedApps }) => {
     const { registerElement, unregisterElement } = useInteraction();
+    const [currentView, setCurrentView] = useState<'all' | 'installed'>('all');
 
     // Use APP_REGISTRY for store apps
-    const storeApps = Object.values(APP_REGISTRY).filter(app => app.id !== "App Store");
+    const allApps = Object.values(APP_REGISTRY).filter(app => app.id !== "App Store");
+
+    // Filter based on current view
+    const storeApps = currentView === 'installed'
+        ? allApps.filter(app => installedApps.includes(app.id))
+        : allApps;
 
     return (
         <motion.div
@@ -65,7 +72,7 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installe
                 >
                     {storeApps.map((app) => {
                         const isInstalled = installedApps.includes(app.id);
-                        const installButtonId = `install-btn-${app.id.replace(/\s+/g, '-').toLowerCase()}`;
+                        const installButtonId = `install - btn - ${app.id.replace(/\s+/g, '-').toLowerCase()} `;
 
                         return (
                             <motion.div
@@ -109,10 +116,10 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installe
                                         }
                                     }}
                                     disabled={isInstalled}
-                                    className={`w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-90 ${isInstalled
-                                            ? 'bg-emerald-500/30 cursor-default'
-                                            : 'bg-neutral-500/30 hover:bg-neutral-500/40'
-                                        }`}
+                                    className={`w - 10 h - 10 flex items - center justify - center rounded - full transition - all active: scale - 90 ${isInstalled
+                                        ? 'bg-emerald-500/30 cursor-default'
+                                        : 'bg-neutral-500/30 hover:bg-neutral-500/40'
+                                        } `}
                                 >
                                     {isInstalled ? (
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -131,6 +138,12 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installe
                     })}
                 </motion.div>
             </div>
+
+            {/* Floating Navigation Dock */}
+            <AppStoreFloatingDock
+                currentView={currentView}
+                onViewChange={setCurrentView}
+            />
 
             <style jsx>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 0px; }
