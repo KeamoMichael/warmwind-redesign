@@ -4,6 +4,13 @@ import { ChromeWindow } from './ChromeWindow';
 import { AppStore } from './AppStore';
 import ConversationWidget from './ConversationWidget';
 import { useInteraction } from '../contexts/InteractionContext';
+import { APP_REGISTRY } from '../config/apps';
+import { ApplicationWindow } from './ApplicationWindow';
+// ... (Top of file imports)
+
+// ...
+
+
 
 interface CinematicViewportProps {
   isResponding: boolean;
@@ -297,7 +304,14 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
                   <ChromeWindow onClose={() => onCloseApp("Chrome")} />
                 ) : appName === "App Store" ? (
                   <AppStore onClose={() => onCloseApp("App Store")} onInstall={onInstallApp} />
-                ) : null}
+                ) : (
+                  APP_REGISTRY[appName] ? (
+                    <ApplicationWindow
+                      app={APP_REGISTRY[appName]}
+                      onClose={() => onCloseApp(appName)}
+                    />
+                  ) : null
+                )}
               </motion.div>
             ))}
           </AnimatePresence>
