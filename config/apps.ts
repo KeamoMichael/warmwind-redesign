@@ -1,5 +1,4 @@
 import React from 'react';
-import { AppStore } from '../components/AppStore';
 
 export interface AppManifest {
     id: string;
@@ -18,7 +17,7 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         name: "App Store",
         icon: "/assets/plus button.png",
         type: 'native',
-        component: AppStore,
+        // component removed - handled directly in CinematicViewport
         width: 850,
         height: 600
     },
