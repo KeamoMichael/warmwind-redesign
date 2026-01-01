@@ -233,13 +233,13 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   // Drag Scroll Logic
   const [isDragging, setIsDragging] = React.useState(false);
   const [startX, setStartX] = React.useState(0);
-  const [scrollLeft, setScrollLeft] = React.useState(0);
+  const [startScrollLeft, setStartScrollLeft] = React.useState(0);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollContainerRef.current) return;
     setIsDragging(true);
-    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
-    setScrollLeft(scrollContainerRef.current.scrollLeft);
+    setStartX(e.pageX);
+    setStartScrollLeft(scrollContainerRef.current.scrollLeft);
   };
 
   const handleMouseLeave = () => {
@@ -253,9 +253,9 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !scrollContainerRef.current) return;
     e.preventDefault();
-    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const x = e.pageX;
     const walk = (x - startX) * 1; // 1:1 Pixel perfect scrolling
-    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+    scrollContainerRef.current.scrollLeft = startScrollLeft - walk;
   };
 
   React.useEffect(() => {
