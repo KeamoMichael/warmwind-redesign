@@ -22,15 +22,36 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installe
         ? allApps.filter(app => installedApps.includes(app.id))
         : allApps;
 
-    const [downloadingApp, setDownloadingApp] = useState<string | null>(null);
+    const [downloadState, setDownloadState] = useState<Record<string, 'idle' | 'detecting' | 'downloading' | 'installed'>>({});
+    const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({});
 
     const handleInstallClick = (appId: string) => {
-        setDownloadingApp(appId);
-        // Simulate download delay
+        // Phase 1: Hardware Detection (Spinner)
+        setDownloadState(prev => ({ ...prev, [appId]: 'detecting' }));
+
         setTimeout(() => {
-            onInstall(appId);
-            setDownloadingApp(null);
-        }, 2500);
+            // Phase 2: Detecting finished, start download
+            setDownloadState(prev => ({ ...prev, [appId]: 'downloading' }));
+            setDownloadProgress(prev => ({ ...prev, [appId]: 0 }));
+
+            // Simulate progress 0 -> 100
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                setDownloadProgress(prev => ({ ...prev, [appId]: progress }));
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    // Phase 3: Complete
+                    onInstall(appId);
+                    setDownloadState(prev => {
+                        const newState = { ...prev };
+                        delete newState[appId]; // Reset state
+                        return newState;
+                    });
+                }
+            }, 100); // 2 seconds total for download (20 steps * 100ms)
+        }, 2000); // 2 seconds for detection
     };
 
     return (
@@ -81,7 +102,10 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installe
                         <div className="grid grid-cols-2 gap-x-5 gap-y-4 pb-20">
                             {storeApps.map((app) => {
                                 const isInstalled = installedApps.includes(app.id);
-                                const isDownloading = downloadingApp === app.id;
+                                const state = downloadState[app.id] || 'idle';
+                                const progress = downloadProgress[app.id] || 0;
+                                const isBusy = state === 'detecting' || state === 'downloading';
+
                                 const installButtonId = `install-btn-${app.id.replace(/\s+/g, '-').toLowerCase()}`;
 
                                 return (
@@ -109,22 +133,22 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installe
                                         <button
                                             id={installButtonId}
                                             ref={(el) => {
-                                                if (el && !isInstalled && !isDownloading) {
+                                                if (el && !isInstalled && !isBusy) {
                                                     registerElement(installButtonId, el, { type: 'button' });
                                                     return () => unregisterElement(installButtonId);
                                                 }
                                             }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (!isInstalled && !isDownloading) {
+                                                if (!isInstalled && !isBusy) {
                                                     handleInstallClick(app.id);
                                                 }
                                             }}
-                                            disabled={isInstalled || isDownloading}
-                                            className={`w-9 h-9 flex items-center justify-center rounded-full transition-all active:scale-90 ${isInstalled
+                                            disabled={isInstalled || isBusy}
+                                            className={`w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-90 relative ${isInstalled
                                                     ? 'bg-teal-500/80'
-                                                    : isDownloading
-                                                        ? 'bg-transparent border-2 border-white/30'
+                                                    : isBusy
+                                                        ? 'bg-transparent'
                                                         : 'bg-neutral-600/60 hover:bg-neutral-600/80'
                                                 }`}
                                         >
@@ -132,11 +156,37 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installe
                                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                                     <polyline points="20 6 9 17 4 12" />
                                                 </svg>
-                                            ) : isDownloading ? (
-                                                <svg className="animate-spin w-4 h-4 text-white/70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            ) : state === 'detecting' ? (
+                                                // Hardware Detection Spinner
+                                                <svg className="animate-spin w-5 h-5 text-white/50" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
+                                            ) : state === 'downloading' ? (
+                                                // Progress Ring
+                                                <div className="relative w-full h-full flex items-center justify-center">
+                                                    <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
+                                                        {/* Track */}
+                                                        <path
+                                                            className="text-white/10"
+                                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="4"
+                                                        />
+                                                        {/* Progress */}
+                                                        <path
+                                                            className="text-teal-400 transition-all duration-100 ease-linear"
+                                                            strokeDasharray={`${progress}, 100`}
+                                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="4"
+                                                        />
+                                                    </svg>
+                                                    {/* Tiny stop icon in middle */}
+                                                    <div className="absolute w-2.5 h-2.5 bg-teal-400 rounded-sm" />
+                                                </div>
                                             ) : (
                                                 <img
                                                     src="/assets/download.png"
