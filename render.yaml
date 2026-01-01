@@ -1,9 +1,9 @@
 services:
   - type: web
     name: warmwind-runtime
-    env: node
-    buildCommand: cd server && npm install && npx playwright install --with-deps chromium
-    startCommand: cd server && npm start
+    runtime: docker
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: ./server
     plan: free
     healthCheckPath: /health
     envVars:
