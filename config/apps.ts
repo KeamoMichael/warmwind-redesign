@@ -18,8 +18,8 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         id: "Chrome",
         name: "Chrome",
         icon: "/assets/Chrome-Logo.png",
-        type: 'native',
-        component: ChromeWindow,
+        type: 'remote',
+        url: "https://google.com",
         width: 800,
         height: 580
     },
