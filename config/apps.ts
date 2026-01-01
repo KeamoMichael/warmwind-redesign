@@ -1,5 +1,4 @@
 import React from 'react';
-import { ChromeWindow } from '../components/ChromeWindow';
 import { AppStore } from '../components/AppStore';
 
 export interface AppManifest {
