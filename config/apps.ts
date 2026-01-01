@@ -14,15 +14,6 @@ export interface AppManifest {
 }
 
 export const APP_REGISTRY: Record<string, AppManifest> = {
-    "Chrome": {
-        id: "Chrome",
-        name: "Chrome",
-        icon: "/assets/Chrome-Logo.png",
-        type: 'remote',
-        url: "https://google.com",
-        width: 800,
-        height: 580
-    },
     "App Store": {
         id: "App Store",
         name: "App Store",
@@ -32,12 +23,21 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         width: 850,
         height: 600
     },
-    "VS Code": {
-        id: "VS Code",
-        name: "VS Code",
-        icon: "/assets/vscode.png",
+    "Chrome": {
+        id: "Chrome",
+        name: "Google Chrome",
+        icon: "/assets/Chrome-Logo.png",
         type: 'remote',
-        url: "https://vscode.dev",
+        url: "https://google.com",
+        width: 800,
+        height: 580
+    },
+    "YouTube": {
+        id: "YouTube",
+        name: "YouTube",
+        icon: "/assets/Chrome-Logo.png", // Will need YouTube icon
+        type: 'remote',
+        url: "https://youtube.com",
         width: 900,
         height: 650
     },
