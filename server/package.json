@@ -1,0 +1,19 @@
+{
+    "name": "warmwind-runtime-server",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Playwright-based runtime server for Warmwind OS",
+    "main": "playwright-runtime.js",
+    "scripts": {
+        "start": "node playwright-runtime.js",
+        "dev": "node playwright-runtime.js"
+    },
+    "dependencies": {
+        "express": "^4.18.2",
+        "playwright": "^1.40.0",
+        "ws": "^8.14.2"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}

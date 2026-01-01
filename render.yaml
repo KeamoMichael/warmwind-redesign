@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: warmwind-runtime
+    env: node
+    buildCommand: cd server && npm install && npx playwright install --with-deps chromium
+    startCommand: cd server && npm start
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production

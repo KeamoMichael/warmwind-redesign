@@ -1,27 +1,53 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { runtimeClient } from '../services/RuntimeClient';
 
 interface RemoteDesktopViewProps {
     appName: string;
-    streamUrl?: string; // Optional real stream URL
+    streamUrl?: string;
 }
 
 const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUrl }) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [connected, setConnected] = useState(false);
+    const [latency, setLatency] = useState(0);
 
     useEffect(() => {
-        runtimeClient.connect();
-        return () => runtimeClient.disconnect();
-    }, []);
+        // Connect to runtime with frame callback
+        runtimeClient.connect(streamUrl, (frameData) => {
+            // Render frame to canvas
+            if (canvasRef.current) {
+                const ctx = canvasRef.current.getContext('2d');
+                if (ctx) {
+                    const img = new Image();
+                    img.onload = () => {
+                        ctx.drawImage(img, 0, 0, canvasRef.current!.width, canvasRef.current!.height);
+                    };
+                    img.src = `data:image/jpeg;base64,${frameData}`;
+                }
+            }
+        });
+
+        setConnected(true);
+
+        // Simulate latency monitoring
+        const latencyTimer = setInterval(() => {
+            setLatency(Math.floor(20 + Math.random() * 10));
+        }, 1000);
+
+        return () => {
+            runtimeClient.disconnect();
+            clearInterval(latencyTimer);
+        };
+    }, [streamUrl]);
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!containerRef.current) return;
         const rect = containerRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x = Math.floor(e.clientX - rect.left);
+        const y = Math.floor(e.clientY - rect.top);
 
-        // Send relative coordinates
         runtimeClient.sendInput({
             type: 'mousemove',
             x,
@@ -32,8 +58,8 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     const handleClick = (e: React.MouseEvent) => {
         if (!containerRef.current) return;
         const rect = containerRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x = Math.floor(e.clientX - rect.left);
+        const y = Math.floor(e.clientY - rect.top);
 
         runtimeClient.sendInput({
             type: 'click',
@@ -46,24 +72,27 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     return (
         <div
             ref={containerRef}
-            className="w-full h-full bg-black relative overflow-hidden cursor-none" // Hide default cursor, AgentCursor will overlay
+            className="w-full h-full bg-black relative overflow-hidden cursor-none"
             onMouseMove={handleMouseMove}
             onClick={handleClick}
         >
-            {/* Stream Simulation Layer */}
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-900 text-white/50">
-                <div className="text-center">
-                    <div className="text-2xl font-semibold mb-2">☁️ Cloud Runtime: {appName}</div>
-                    <div className="text-sm font-mono text-emerald-400">Stream Active • Latency: 24ms</div>
-                    {/* Dynamic Noise/Stream placeholder */}
-                    <div className="mt-8 w-64 h-32 bg-gray-800 rounded border border-gray-700 mx-auto flex items-center justify-center">
-                        <span className="text-xs text-gray-500">[ Video Stream Buffer ]</span>
-                    </div>
-                </div>
-            </div>
+            {/* Canvas for streaming */}
+            <canvas
+                ref={canvasRef}
+                width={1280}
+                height={720}
+                className="w-full h-full object-contain"
+            />
 
-            {/* Actual Iframe Fallback (Optional for transition) */}
-            {/* If we had a real VNC url we would put <canvas> or <img> here */}
+            {/* Status Overlay */}
+            <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg text-white text-xs font-mono">
+                <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400' : 'bg-red-400'}`}></div>
+                    <span>{connected ? 'Connected' : 'Connecting...'}</span>
+                    {connected && <span className="text-emerald-400">• {latency}ms</span>}
+                </div>
+                <div className="text-gray-400 mt-1">{appName}</div>
+            </div>
         </div>
     );
 };

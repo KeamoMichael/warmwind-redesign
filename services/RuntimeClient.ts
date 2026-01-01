@@ -6,39 +6,109 @@ export interface MouseEvent {
 }
 
 export interface KeyboardEvent {
-    type: 'keydown' | 'keyup';
+    type: 'keydown' | 'keyup' | 'keypress';
     key: string;
-    code: string;
+    text?: string;
 }
+
+interface FrameMessage {
+    type: 'frame';
+    data: string; // base64 jpeg
+}
+
+interface StatusMessage {
+    type: 'connected' | 'navigated' | 'error';
+    message?: string;
+    sessionId?: string;
+}
+
+type ServerMessage = FrameMessage | StatusMessage;
 
 class RuntimeClient {
     private socket: WebSocket | null = null;
     private isConnected: boolean = false;
+    private frameCallback: ((frameData: string) => void) | null = null;
+    private reconnectAttempts: number = 0;
+    private maxReconnectAttempts: number = 5;
 
-    connect(url: string = "wss://api.warmwind.os/runtime/v1/stream") {
-        // Mock Connection
-        console.log(`🔌 Connecting to Cloud Runtime at ${url}...`);
-        this.isConnected = true;
+    connect(url?: string, onFrame?: (frameData: string) => void) {
+        const wsUrl = url || import.meta.env.VITE_RUNTIME_URL || 'ws://localhost:8080';
 
-        // Simulate connection event
-        setTimeout(() => {
-            console.log("✅ Runtime Connected. Stream Ready.");
-        }, 500);
+        console.log(`🔌 Connecting to Playwright Runtime at ${wsUrl}...`);
+
+        this.frameCallback = onFrame || null;
+
+        try {
+            this.socket = new WebSocket(wsUrl);
+
+            this.socket.onopen = () => {
+                console.log("✅ Runtime Connected. Stream Ready.");
+                this.isConnected = true;
+                this.reconnectAttempts = 0;
+            };
+
+            this.socket.onmessage = (event) => {
+                try {
+                    const message: ServerMessage = JSON.parse(event.data);
+
+                    if (message.type === 'frame' && this.frameCallback) {
+                        this.frameCallback(message.data);
+                    } else if (message.type === 'connected') {
+                        console.log(`📡 Session started: ${message.sessionId}`);
+                    } else if (message.type === 'error') {
+                        console.error('Runtime error:', message.message);
+                    }
+                } catch (err) {
+                    console.error('Failed to parse server message:', err);
+                }
+            };
+
+            this.socket.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+
+            this.socket.onclose = () => {
+                console.log('🔌 Disconnected from Runtime.');
+                this.isConnected = false;
+
+                // Auto-reconnect
+                if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                    this.reconnectAttempts++;
+                    console.log(`Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+                    setTimeout(() => this.connect(wsUrl, this.frameCallback || undefined), 2000);
+                }
+            };
+        } catch (err) {
+            console.error('Failed to create WebSocket:', err);
+        }
     }
 
     sendInput(event: MouseEvent | KeyboardEvent) {
-        if (!this.isConnected) {
-            // console.warn("Runtime not connected. Input dropped.");
+        if (!this.isConnected || !this.socket) {
+            console.warn("Runtime not connected. Input dropped.");
             return;
         }
 
-        // In production, this would be: this.socket.send(JSON.stringify(event));
-        console.log(`[Runtime Input] Sending:`, event);
+        this.socket.send(JSON.stringify(event));
+    }
+
+    navigate(url: string) {
+        if (!this.isConnected || !this.socket) {
+            console.warn("Runtime not connected. Navigation dropped.");
+            return;
+        }
+
+        this.socket.send(JSON.stringify({ type: 'navigate', url }));
     }
 
     disconnect() {
+        if (this.socket) {
+            this.socket.close();
+            this.socket = null;
+        }
         this.isConnected = false;
-        console.log("🔌 Disconnected from Runtime.");
+        this.frameCallback = null;
+        console.log("🔌 Manually disconnected from Runtime.");
     }
 }
 
