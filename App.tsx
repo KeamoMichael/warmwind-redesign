@@ -48,6 +48,10 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const handleUninstallApp = (appName: string) => {
+    setInstalledApps(prev => prev.filter(app => app !== appName));
+  };
+
   const handleOpenApp = (appName: string) => {
     const name = appName === "Docs" ? "Google Docs" : appName;
 
@@ -345,6 +349,7 @@ const AppContent: React.FC = () => {
           onOpenApp={handleOpenApp}
           onCloseApp={handleCloseApp}
           onInstallApp={handleInstallApp}
+          onUninstallApp={handleUninstallApp}
           showConversationWidget={showConversationWidget}
           messages={messages}
           onSendMessage={handleSendMessage}

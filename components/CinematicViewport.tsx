@@ -221,6 +221,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   onCloseApp,
   installedApps,
   onInstallApp,
+  onUninstallApp,
   showConversationWidget,
   messages,
   onSendMessage,
@@ -253,7 +254,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
     if (!isDragging || !scrollContainerRef.current) return;
     e.preventDefault();
     const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 2; // Scroll speed multiplier
+    const walk = (x - startX) * 1; // 1:1 Pixel perfect scrolling
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
@@ -314,7 +315,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
       <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none z-10">
         <div
           ref={scrollContainerRef}
-          className={`flex items-center gap-20 px-[calc(50vw-400px)] pointer-events-auto overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full py-20 ${isDragging ? 'cursor-grabbing snap-none' : 'cursor-grab'}`}
+          className={`flex items-center gap-32 px-[calc(50vw-400px)] pointer-events-auto overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full py-20 ${isDragging ? 'cursor-grabbing snap-none' : 'cursor-grab'}`}
           style={{ scrollBehavior: isDragging ? 'auto' : 'smooth' }}
           onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseLeave}
@@ -347,6 +348,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
                   <AppStore
                     onClose={() => onCloseApp("App Store")}
                     onInstall={onInstallApp}
+                    onUninstall={onUninstallApp}
                     installedApps={installedApps}
                   />
                 ) : (

@@ -7,10 +7,11 @@ import { AppStoreFloatingDock } from './AppStoreFloatingDock';
 interface AppStoreProps {
     onClose: () => void;
     onInstall: (appName: string) => void;
+    onUninstall: (appName: string) => void;
     installedApps: string[];
 }
 
-export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installedApps }) => {
+export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, onUninstall, installedApps }) => {
     const { registerElement, unregisterElement } = useInteraction();
     const [currentView, setCurrentView] = useState<'all' | 'installed'>('all');
 
@@ -140,22 +141,32 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, installe
                                             }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (!isInstalled && !isBusy) {
+                                                if (isInstalled && currentView === 'installed') {
+                                                    onUninstall(app.id);
+                                                } else if (!isInstalled && !isBusy) {
                                                     handleInstallClick(app.id);
                                                 }
                                             }}
-                                            disabled={isInstalled || isBusy}
+                                            disabled={isBusy || (isInstalled && currentView !== 'installed')}
                                             className={`w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-90 relative ${isInstalled
-                                                    ? 'bg-teal-500/80'
+                                                    ? currentView === 'installed' ? 'bg-red-500/20 hover:bg-red-500/40 text-red-400' : 'bg-teal-500/80'
                                                     : isBusy
                                                         ? 'bg-transparent'
                                                         : 'bg-neutral-600/60 hover:bg-neutral-600/80'
                                                 }`}
                                         >
                                             {isInstalled ? (
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                                    <polyline points="20 6 9 17 4 12" />
-                                                </svg>
+                                                currentView === 'installed' ? (
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M3 6h18" />
+                                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                                        <polyline points="20 6 9 17 4 12" />
+                                                    </svg>
+                                                )
                                             ) : state === 'detecting' ? (
                                                 // Hardware Detection Spinner
                                                 <svg className="animate-spin w-5 h-5 text-white/50" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
