@@ -45,6 +45,8 @@ wss.on('connection', async (ws) => {
 
         sessions.set(sessionId, { browser, page });
 
+        console.log(`✅ Browser launched for session ${sessionId}`);
+
         ws.send(JSON.stringify({
             type: 'connected',
             sessionId,
@@ -52,6 +54,7 @@ wss.on('connection', async (ws) => {
         }));
 
         // Start streaming screenshots (10 FPS)
+        let frameCount = 0;
         screenshotInterval = setInterval(async () => {
             if (page && ws.readyState === 1) {
                 try {
@@ -64,6 +67,11 @@ wss.on('connection', async (ws) => {
                         type: 'frame',
                         data: screenshot.toString('base64')
                     }));
+
+                    frameCount++;
+                    if (frameCount % 50 === 1) {
+                        console.log(`📹 Streamed ${frameCount} frames to session ${sessionId}`);
+                    }
                 } catch (err) {
                     // Page might be navigating, ignore
                 }
@@ -74,10 +82,13 @@ wss.on('connection', async (ws) => {
         ws.on('message', async (data) => {
             try {
                 const command = JSON.parse(data.toString());
+                console.log(`📨 Command received: ${command.type}`, command.type === 'navigate' ? command.url : '');
 
                 switch (command.type) {
                     case 'navigate':
-                        await page.goto(command.url);
+                        console.log(`🌐 Navigating to ${command.url}...`);
+                        await page.goto(command.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+                        console.log(`✅ Navigation complete: ${command.url}`);
                         ws.send(JSON.stringify({ type: 'navigated', url: command.url }));
                         break;
 
