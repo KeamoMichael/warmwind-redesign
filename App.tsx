@@ -7,6 +7,8 @@ import { InteractionProvider, useInteraction } from './contexts/InteractionConte
 import VisualInteractionLayer from './components/VisualInteractionLayer';
 import { useInputController } from './hooks/useInputController';
 import { perceptionService } from './services/PerceptionService';
+import { CodespaceVNC } from './components/CodespaceVNC';
+import { VMSettings } from './components/VMSettings';
 
 const AppContent: React.FC = () => {
   const [isResponding, setIsResponding] = React.useState(false);
@@ -21,6 +23,12 @@ const AppContent: React.FC = () => {
   const [showConversationWidget, setShowConversationWidget] = React.useState(false);
   const [installedApps, setInstalledApps] = React.useState<string[]>(["Chrome", "App Store"]);
   const responseTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // VNC Integration State
+  const [showVMSettings, setShowVMSettings] = React.useState(false);
+  const [vncUrl, setVncUrl] = React.useState(
+    localStorage.getItem('codespace_vnc_url') || ''
+  );
 
   // Hook enabled now that we are inside the Provider
   const { executeAction } = useInputController();
@@ -364,26 +372,49 @@ const AppContent: React.FC = () => {
   return (
     <main className="h-screen w-full bg-[#F3F3F3] p-4 md:p-6 flex flex-col gap-6 overflow-hidden">
       <section className="flex-1 w-full relative min-h-0">
-        <CinematicViewport
-          isResponding={isResponding}
-          assistantMessage={assistantMessage}
-          agentSteps={agentSteps}
-          activeStepIndex={activeStepIndex}
-          isAgenticMode={isAgenticMode}
-          isBooting={isBooting}
-          agentStatus={agentStatus}
-          openApps={openApps}
-          installedApps={installedApps}
-          onOpenApp={handleOpenApp}
-          onCloseApp={handleCloseApp}
-          onInstallApp={handleInstallApp}
-          onUninstallApp={handleUninstallApp}
-          showConversationWidget={showConversationWidget}
-          messages={messages}
-          onSendMessage={handleSendMessage}
-          onCloseConversationWidget={() => setShowConversationWidget(false)}
-        />
+        {vncUrl ? (
+          // VNC Stream Integration
+          <CodespaceVNC vncUrl={vncUrl} />
+        ) : (
+          // Configuration Prompt
+          <div className="w-full h-full rounded-[32px] md:rounded-[40px] bg-gradient-to-b from-neutral-50 to-neutral-100 flex flex-col items-center justify-center gap-6 shadow-sm">
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold text-neutral-800 mb-2">
+                Connect to Your Codespace
+              </h2>
+              <p className="text-neutral-500 text-sm">
+                Configure your GitHub Codespace VNC URL to get started
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowVMSettings(true)}
+              className="bg-[#4db7ae] hover:bg-[#3da89f] text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Configure VNC Settings
+            </button>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md">
+              <p className="text-xs text-blue-800">
+                <strong>Quick Start:</strong>
+                <br />
+                1. Create a GitHub Codespace from this repo
+                <br />
+                2. Run ./start-vnc.sh in the terminal
+                <br />
+                3. Copy the URL from port 6080
+                <br />
+                4. Click the button above to configure
+              </p>
+            </div>
+          </div>
+        )}
       </section>
+
       <section className="h-20 w-full shrink-0 flex items-center">
         <BottomDock
           onSendMessage={handleSendMessage}
@@ -393,6 +424,16 @@ const AppContent: React.FC = () => {
           agentStatus={agentStatus}
         />
       </section>
+
+      {/* VM Settings Modal */}
+      {showVMSettings && (
+        <VMSettings
+          onClose={() => {
+            setShowVMSettings(false);
+            setVncUrl(localStorage.getItem('codespace_vnc_url') || '');
+          }}
+        />
+      )}
     </main>
   );
 };
