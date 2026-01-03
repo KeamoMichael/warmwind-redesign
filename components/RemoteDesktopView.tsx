@@ -99,7 +99,7 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     return (
         <div
             ref={containerRef}
-            className="w-full h-full bg-black relative overflow-hidden cursor-crosshair"
+            className="w-full h-full bg-black relative overflow-hidden cursor-default"
             onMouseMove={handleMouseMove}
             onClick={handleClick}
         >
