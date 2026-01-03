@@ -9,6 +9,7 @@ import { useInputController } from './hooks/useInputController';
 import { perceptionService } from './services/PerceptionService';
 import { CodespaceVNC } from './components/CodespaceVNC';
 import { VMSettings } from './components/VMSettings';
+import { VNCOverlayDock } from './components/VNCOverlayDock';
 
 const AppContent: React.FC = () => {
   const [isResponding, setIsResponding] = React.useState(false);
@@ -373,8 +374,20 @@ const AppContent: React.FC = () => {
     <main className="h-screen w-full bg-[#F3F3F3] p-4 md:p-6 flex flex-col gap-6 overflow-hidden">
       <section className="flex-1 w-full relative min-h-0">
         {vncUrl ? (
-          // VNC Stream Integration
-          <CodespaceVNC vncUrl={vncUrl} />
+          // VNC Stream Integration with Overlay Dock
+          <div className="relative w-full h-full rounded-[32px] md:rounded-[40px] overflow-hidden">
+            <CodespaceVNC vncUrl={vncUrl} />
+
+            {/* Overlay Dock for app launching */}
+            <VNCOverlayDock
+              onLaunchApp={(command) => {
+                // For now, log the command - user runs in Codespace terminal
+                console.log('Launch app:', command);
+                alert(`Run in Codespace terminal:\nDISPLAY=:99 ${command} &`);
+              }}
+              onOpenSettings={() => setShowVMSettings(true)}
+            />
+          </div>
         ) : (
           // Configuration Prompt
           <div className="w-full h-full rounded-[32px] md:rounded-[40px] bg-gradient-to-b from-neutral-50 to-neutral-100 flex flex-col items-center justify-center gap-6 shadow-sm">
