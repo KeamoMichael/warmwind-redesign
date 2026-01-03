@@ -21,6 +21,7 @@ export interface InteractionContextType {
     getElementBounds: (id: string) => DOMRect | null;
     getElementMetadata: (id: string) => InteractionMetadata | undefined;
     updateCursor: (newState: Partial<CursorState>) => void;
+    setUserCursorPosition: (x: number, y: number) => void; // Direct position update for user mouse
     // Primitives
     moveCursorTo: (x: number, y: number, duration?: number) => Promise<void>;
     clickArguments: (x: number, y: number) => Promise<void>; // Low level click at coords
@@ -34,7 +35,7 @@ export const InteractionProvider: React.FC<{ children: React.ReactNode }> = ({ c
         y: window.innerHeight / 2,
         isDown: false,
         visualState: 'default',
-        isVisible: false,
+        isVisible: true, // Always visible for unified cursor
     });
 
     const elementsRef = useRef<Map<string, HTMLElement>>(new Map());
@@ -66,6 +67,11 @@ export const InteractionProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     const updateCursor = useCallback((newState: Partial<CursorState>) => {
         setCursor(prev => ({ ...prev, ...newState }));
+    }, []);
+
+    // Direct position update for user mouse (no animation)
+    const setUserCursorPosition = useCallback((x: number, y: number) => {
+        setCursor(prev => ({ ...prev, x, y }));
     }, []);
 
     // Primitive: Move Cursor (Linear interpolation for now, can be enhanced with bezier)
@@ -129,6 +135,7 @@ export const InteractionProvider: React.FC<{ children: React.ReactNode }> = ({ c
             getElementBounds,
             getElementMetadata,
             updateCursor,
+            setUserCursorPosition,
             moveCursorTo,
             clickArguments,
         }}>

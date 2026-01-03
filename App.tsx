@@ -23,7 +23,12 @@ const AppContent: React.FC = () => {
 
   // Hook enabled now that we are inside the Provider
   const { executeAction } = useInputController();
-  const { updateCursor } = useInteraction();
+  const { updateCursor, setUserCursorPosition } = useInteraction();
+
+  // Track user mouse position and update agent cursor
+  const handleMouseMove = React.useCallback((e: React.MouseEvent) => {
+    setUserCursorPosition(e.clientX, e.clientY);
+  }, [setUserCursorPosition]);
 
   React.useEffect(() => {
     // OS Boot Sequence
@@ -334,7 +339,10 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <main className="h-screen w-full bg-[#F3F3F3] p-4 md:p-6 flex flex-col gap-6 overflow-hidden">
+    <main
+      className="h-screen w-full bg-[#F3F3F3] p-4 md:p-6 flex flex-col gap-6 overflow-hidden cursor-none"
+      onMouseMove={handleMouseMove}
+    >
       <section className="flex-1 w-full relative min-h-0">
         <CinematicViewport
           isResponding={isResponding}
