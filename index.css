@@ -5,6 +5,14 @@
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+/* Force hide cursor on OS viewport and all children */
+.os-cursor-hide,
+.os-cursor-hide * {
+    cursor: none !important;
 }

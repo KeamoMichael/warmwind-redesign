@@ -304,7 +304,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   return (
     <div
       ref={viewportRef}
-      className={`relative w-full h-full rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm ${isInsideOS ? 'cursor-none' : ''}`}
+      className={`relative w-full h-full rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm ${isInsideOS ? 'os-cursor-hide' : ''}`}
       onMouseMove={handleViewportMouseMove}
       onMouseEnter={handleViewportMouseEnter}
       onMouseLeave={handleViewportMouseLeave}
