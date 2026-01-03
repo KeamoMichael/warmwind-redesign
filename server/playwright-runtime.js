@@ -38,29 +38,21 @@ wss.on('connection', async (ws) => {
     const messageQueue = [];
     let browserReady = false;
 
-    // Register message handler FIRST (before any async work)
+    // Register message handler FIRST
     ws.on('message', async (rawData) => {
         try {
             const dataStr = rawData.toString();
-            console.log(`📨 Raw message received (${dataStr.length} chars)`);
-
             const command = JSON.parse(dataStr);
-            console.log(`📨 Command: ${command.type}`, command.url || '');
 
             // Queue messages if browser not ready
             if (!browserReady) {
-                console.log(`⏳ Browser not ready, queuing command: ${command.type}`);
                 messageQueue.push(command);
                 return;
             }
 
             await processCommand(command);
         } catch (err) {
-            console.error('❌ Message handling error:', err.message);
-            ws.send(JSON.stringify({
-                type: 'error',
-                message: err.message
-            }));
+            console.error('❌ Message error:', err.message);
         }
     });
 
@@ -68,7 +60,7 @@ wss.on('connection', async (ws) => {
     async function processCommand(command) {
         switch (command.type) {
             case 'navigate':
-                console.log(`🌐 Navigating to ${command.url}...`);
+                console.log(`🌐 Navigating to ${command.url}`);
                 isNavigating = true;
                 try {
                     await page.goto(command.url, {
@@ -79,29 +71,28 @@ wss.on('connection', async (ws) => {
                     ws.send(JSON.stringify({ type: 'navigated', url: command.url }));
                 } catch (navErr) {
                     console.error(`❌ Navigation failed: ${navErr.message}`);
-                    ws.send(JSON.stringify({ type: 'error', message: `Navigation failed: ${navErr.message}` }));
                 } finally {
                     isNavigating = false;
                 }
                 break;
 
             case 'click':
-                console.log(`🖱️ Click at (${command.x}, ${command.y})`);
-                await page.mouse.click(command.x, command.y);
+                // Fast click without waiting
+                page.mouse.click(command.x, command.y).catch(() => { });
                 break;
 
             case 'mousemove':
-                await page.mouse.move(command.x, command.y);
+                // Fast move without waiting
+                page.mouse.move(command.x, command.y).catch(() => { });
                 break;
 
             case 'type':
-                console.log(`⌨️ Typing: ${command.text}`);
-                await page.keyboard.type(command.text);
+                // Type immediately
+                page.keyboard.type(command.text).catch(() => { });
                 break;
 
             case 'keypress':
-                console.log(`⌨️ Key: ${command.key}`);
-                await page.keyboard.press(command.key);
+                page.keyboard.press(command.key).catch(() => { });
                 break;
 
             default:
@@ -110,7 +101,7 @@ wss.on('connection', async (ws) => {
     }
 
     try {
-        // Launch browser with optimized settings
+        // Launch browser with SPEED optimized settings
         browser = await chromium.launch({
             headless: true,
             args: [
@@ -120,7 +111,11 @@ wss.on('connection', async (ws) => {
                 '--disable-gpu',
                 '--no-first-run',
                 '--no-zygote',
-                '--single-process'
+                '--single-process',
+                '--disable-extensions',
+                '--disable-background-timer-throttling',
+                '--disable-renderer-backgrounding',
+                '--disable-backgrounding-occluded-windows'
             ]
         });
 
@@ -128,14 +123,14 @@ wss.on('connection', async (ws) => {
         await page.setViewportSize({ width: 1280, height: 720 });
 
         sessions.set(sessionId, { browser, page });
+        console.log(`✅ Browser ready: ${sessionId}`);
 
-        console.log(`✅ Browser launched for session ${sessionId}`);
-
-        // Browser is now ready - process any queued messages
+        // Browser is now ready
         browserReady = true;
 
+        // Process queued messages
         if (messageQueue.length > 0) {
-            console.log(`📬 Processing ${messageQueue.length} queued commands...`);
+            console.log(`📬 Processing ${messageQueue.length} queued commands`);
             for (const cmd of messageQueue) {
                 await processCommand(cmd);
             }
@@ -144,17 +139,17 @@ wss.on('connection', async (ws) => {
         ws.send(JSON.stringify({
             type: 'connected',
             sessionId,
-            message: 'Browser launched successfully'
+            message: 'Ready'
         }));
 
-        // Start streaming high-quality screenshots (15 FPS)
+        // OPTIMIZED: Lower quality for SPEED, higher FPS
         let frameCount = 0;
         screenshotInterval = setInterval(async () => {
             if (page && ws.readyState === 1 && !isNavigating) {
                 try {
                     const screenshot = await page.screenshot({
                         type: 'jpeg',
-                        quality: 85
+                        quality: 50 // Lower quality = faster transmission
                     });
 
                     ws.send(JSON.stringify({
@@ -163,14 +158,11 @@ wss.on('connection', async (ws) => {
                     }));
 
                     frameCount++;
-                    if (frameCount === 1 || frameCount % 100 === 0) {
-                        console.log(`📹 Streaming frames: ${frameCount} sent to ${sessionId}`);
-                    }
                 } catch (err) {
-                    // Page might be navigating, ignore
+                    // Ignore screenshot errors during navigation
                 }
             }
-        }, 66); // ~15 FPS
+        }, 50); // 20 FPS for smoother feel
 
     } catch (err) {
         console.error('❌ Browser launch failed:', err);
@@ -182,10 +174,8 @@ wss.on('connection', async (ws) => {
 
     // Cleanup on disconnect
     ws.on('close', async () => {
-        console.log(`🔌 Client disconnected: ${sessionId}`);
-
+        console.log(`🔌 Disconnected: ${sessionId}`);
         if (screenshotInterval) clearInterval(screenshotInterval);
-
         if (browser) {
             await browser.close();
             sessions.delete(sessionId);
@@ -193,11 +183,10 @@ wss.on('connection', async (ws) => {
     });
 
     ws.on('error', (err) => {
-        console.error(`❌ WebSocket error for ${sessionId}:`, err.message);
+        console.error(`❌ WebSocket error: ${err.message}`);
     });
 });
 
 server.listen(PORT, () => {
-    console.log(`🚀 Playwright Runtime Server running on port ${PORT}`);
-    console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🚀 Playwright Runtime on port ${PORT}`);
 });

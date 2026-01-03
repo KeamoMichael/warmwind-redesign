@@ -83,6 +83,9 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
         }
     }, [connected, initialUrl]);
 
+    // Throttle ref for mouse moves
+    const lastMouseMoveRef = useRef(0);
+
     const getScaledCoordinates = (e: React.MouseEvent) => {
         if (!containerRef.current || !canvasRef.current) return { x: 0, y: 0 };
         const rect = containerRef.current.getBoundingClientRect();
@@ -94,7 +97,12 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
         };
     };
 
+    // Throttled mouse move (every 16ms = 60fps max)
     const handleMouseMove = (e: React.MouseEvent) => {
+        const now = Date.now();
+        if (now - lastMouseMoveRef.current < 16) return; // Throttle
+        lastMouseMoveRef.current = now;
+
         const { x, y } = getScaledCoordinates(e);
         runtimeClient.sendInput({ type: 'mousemove', x, y });
     };

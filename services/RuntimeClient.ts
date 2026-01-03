@@ -6,8 +6,8 @@ export interface MouseEvent {
 }
 
 export interface KeyboardEvent {
-    type: 'keydown' | 'keyup' | 'keypress';
-    key: string;
+    type: 'keydown' | 'keyup' | 'keypress' | 'type';
+    key?: string;
     text?: string;
 }
 
