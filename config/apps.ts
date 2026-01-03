@@ -17,7 +17,6 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         name: "App Store",
         icon: "/assets/plus button.png",
         type: 'native',
-        // component removed - handled directly in CinematicViewport
         width: 850,
         height: 600
     },
@@ -27,15 +26,15 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         icon: "/assets/Chrome-Logo.png",
         type: 'remote',
         url: "https://google.com",
-        width: 800,
-        height: 580
+        width: 900,
+        height: 650
     },
     "YouTube": {
         id: "YouTube",
         name: "YouTube",
         icon: "/assets/youtube.png",
         type: 'remote',
-        url: "https://youtube.com",
+        url: "https://www.youtube.com",
         width: 900,
         height: 650
     },
@@ -45,8 +44,8 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         icon: "/assets/gmail icon.png",
         type: 'remote',
         url: "https://mail.google.com/mail/mu/mp/",
-        width: 800,
-        height: 600
+        width: 900,
+        height: 650
     },
     "Docs": {
         id: "Docs",
@@ -54,8 +53,8 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         icon: "/assets/Google_Docs_logo.png",
         type: 'remote',
         url: "https://docs.google.com/document/u/0/",
-        width: 850,
-        height: 650
+        width: 900,
+        height: 700
     },
     "Sheets": {
         id: "Sheets",
@@ -63,7 +62,7 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         icon: "/assets/Google_Sheets_Logo.png",
         type: 'remote',
         url: "https://docs.google.com/spreadsheets/u/0/",
-        width: 850,
-        height: 650
+        width: 900,
+        height: 700
     }
 };

@@ -22,7 +22,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Active browser sessions (session-id -> { browser, page })
+// Active browser sessions
 const sessions = new Map();
 
 wss.on('connection', async (ws) => {
@@ -32,12 +32,21 @@ wss.on('connection', async (ws) => {
     let browser = null;
     let page = null;
     let screenshotInterval = null;
+    let isNavigating = false;
 
     try {
-        // Launch browser
+        // Launch browser with optimized settings
         browser = await chromium.launch({
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process'
+            ]
         });
 
         page = await browser.newPage();
@@ -53,14 +62,14 @@ wss.on('connection', async (ws) => {
             message: 'Browser launched successfully'
         }));
 
-        // Start streaming screenshots (10 FPS)
+        // Start streaming high-quality screenshots (15 FPS)
         let frameCount = 0;
         screenshotInterval = setInterval(async () => {
-            if (page && ws.readyState === 1) {
+            if (page && ws.readyState === 1 && !isNavigating) {
                 try {
                     const screenshot = await page.screenshot({
                         type: 'jpeg',
-                        quality: 70
+                        quality: 85 // Higher quality for better fidelity
                     });
 
                     ws.send(JSON.stringify({
@@ -69,30 +78,45 @@ wss.on('connection', async (ws) => {
                     }));
 
                     frameCount++;
-                    if (frameCount % 50 === 1) {
-                        console.log(`📹 Streamed ${frameCount} frames to session ${sessionId}`);
+                    if (frameCount === 1 || frameCount % 100 === 0) {
+                        console.log(`📹 Streaming frames: ${frameCount} sent to ${sessionId}`);
                     }
                 } catch (err) {
                     // Page might be navigating, ignore
                 }
             }
-        }, 100);
+        }, 66); // ~15 FPS for smoother experience
 
         // Handle incoming commands
-        ws.on('message', async (data) => {
+        ws.on('message', async (rawData) => {
             try {
-                const command = JSON.parse(data.toString());
-                console.log(`📨 Command received: ${command.type}`, command.type === 'navigate' ? command.url : '');
+                const dataStr = rawData.toString();
+                console.log(`📨 Raw message received (${dataStr.length} chars)`);
+
+                const command = JSON.parse(dataStr);
+                console.log(`📨 Command: ${command.type}`, command.url || command.x || '');
 
                 switch (command.type) {
                     case 'navigate':
                         console.log(`🌐 Navigating to ${command.url}...`);
-                        await page.goto(command.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-                        console.log(`✅ Navigation complete: ${command.url}`);
-                        ws.send(JSON.stringify({ type: 'navigated', url: command.url }));
+                        isNavigating = true;
+                        try {
+                            await page.goto(command.url, {
+                                waitUntil: 'domcontentloaded',
+                                timeout: 30000
+                            });
+                            console.log(`✅ Navigation complete: ${command.url}`);
+                            ws.send(JSON.stringify({ type: 'navigated', url: command.url }));
+                        } catch (navErr) {
+                            console.error(`❌ Navigation failed: ${navErr.message}`);
+                            ws.send(JSON.stringify({ type: 'error', message: `Navigation failed: ${navErr.message}` }));
+                        } finally {
+                            isNavigating = false;
+                        }
                         break;
 
                     case 'click':
+                        console.log(`🖱️ Click at (${command.x}, ${command.y})`);
                         await page.mouse.click(command.x, command.y);
                         break;
 
@@ -101,17 +125,20 @@ wss.on('connection', async (ws) => {
                         break;
 
                     case 'type':
+                        console.log(`⌨️ Typing: ${command.text}`);
                         await page.keyboard.type(command.text);
                         break;
 
                     case 'keypress':
+                        console.log(`⌨️ Key: ${command.key}`);
                         await page.keyboard.press(command.key);
                         break;
 
                     default:
-                        console.warn('Unknown command:', command.type);
+                        console.warn('⚠️ Unknown command:', command.type);
                 }
             } catch (err) {
+                console.error('❌ Message handling error:', err.message);
                 ws.send(JSON.stringify({
                     type: 'error',
                     message: err.message
@@ -120,7 +147,7 @@ wss.on('connection', async (ws) => {
         });
 
     } catch (err) {
-        console.error('Browser launch failed:', err);
+        console.error('❌ Browser launch failed:', err);
         ws.send(JSON.stringify({
             type: 'error',
             message: 'Failed to launch browser: ' + err.message
@@ -129,7 +156,7 @@ wss.on('connection', async (ws) => {
 
     // Cleanup on disconnect
     ws.on('close', async () => {
-        console.log('🔌 Client disconnected');
+        console.log(`🔌 Client disconnected: ${sessionId}`);
 
         if (screenshotInterval) clearInterval(screenshotInterval);
 
@@ -138,8 +165,13 @@ wss.on('connection', async (ws) => {
             sessions.delete(sessionId);
         }
     });
+
+    ws.on('error', (err) => {
+        console.error(`❌ WebSocket error for ${sessionId}:`, err.message);
+    });
 });
 
 server.listen(PORT, () => {
     console.log(`🚀 Playwright Runtime Server running on port ${PORT}`);
+    console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
