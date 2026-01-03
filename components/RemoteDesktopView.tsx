@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { runtimeClient } from '../services/RuntimeClient';
 
 interface RemoteDesktopViewProps {
@@ -11,8 +12,24 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [connected, setConnected] = useState(false);
+    const [loadingProgress, setLoadingProgress] = useState(0);
     const frameCountRef = useRef(0);
     const currentUrlRef = useRef<string | null>(null);
+
+    // Simulate loading progress
+    useEffect(() => {
+        if (!connected) {
+            const interval = setInterval(() => {
+                setLoadingProgress(prev => {
+                    if (prev >= 90) return prev; // Cap at 90% until actually connected
+                    return prev + Math.random() * 15;
+                });
+            }, 200);
+            return () => clearInterval(interval);
+        } else {
+            setLoadingProgress(100);
+        }
+    }, [connected]);
 
     // Frame rendering callback
     const handleFrame = useCallback((frameData: string) => {
@@ -24,7 +41,6 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
                 const img = new Image();
                 img.onload = () => {
                     if (canvasRef.current && containerRef.current) {
-                        // Match canvas to container size for perfect fit
                         const container = containerRef.current;
                         canvasRef.current.width = container.clientWidth;
                         canvasRef.current.height = container.clientHeight;
@@ -38,48 +54,40 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
 
     // Connection established callback
     const handleConnected = useCallback(() => {
-        console.log(`🎯 RemoteDesktopView: Connection established for ${appName}`);
+        console.log(`🎯 Connected: ${appName}`);
         setConnected(true);
 
-        // Navigate when connection is established
         if (initialUrl && currentUrlRef.current !== initialUrl) {
             currentUrlRef.current = initialUrl;
-            console.log(`🚀 Navigating to: ${initialUrl}`);
             runtimeClient.navigate(initialUrl);
         }
     }, [appName, initialUrl]);
 
     useEffect(() => {
-        console.log(`📡 RemoteDesktopView: Initializing connection for ${appName}`);
         frameCountRef.current = 0;
         currentUrlRef.current = null;
+        setLoadingProgress(0);
+        setConnected(false);
 
         runtimeClient.connect(streamUrl, handleFrame, handleConnected);
 
         return () => {
-            console.log(`🔌 RemoteDesktopView: Cleanup for ${appName}`);
             runtimeClient.disconnect();
         };
     }, [streamUrl, handleFrame, handleConnected, appName]);
 
-    // Navigate when URL changes
     useEffect(() => {
         if (connected && initialUrl && currentUrlRef.current !== initialUrl) {
-            console.log(`🔄 URL changed, navigating to: ${initialUrl}`);
             currentUrlRef.current = initialUrl;
             runtimeClient.navigate(initialUrl);
         }
     }, [connected, initialUrl]);
 
-    // Scale mouse coordinates to match canvas resolution
     const getScaledCoordinates = (e: React.MouseEvent) => {
         if (!containerRef.current || !canvasRef.current) return { x: 0, y: 0 };
-
         const rect = containerRef.current.getBoundingClientRect();
-        // Use 1280x720 as the server viewport size
         const scaleX = 1280 / rect.width;
         const scaleY = 720 / rect.height;
-
         return {
             x: Math.floor((e.clientX - rect.left) * scaleX),
             y: Math.floor((e.clientY - rect.top) * scaleY)
@@ -94,20 +102,12 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     const handleClick = (e: React.MouseEvent) => {
         e.preventDefault();
         const { x, y } = getScaledCoordinates(e);
-        runtimeClient.sendInput({
-            type: 'click',
-            x,
-            y,
-            button: e.button === 0 ? 'left' : 'right'
-        });
+        runtimeClient.sendInput({ type: 'click', x, y, button: e.button === 0 ? 'left' : 'right' });
     };
 
-    // Keyboard input handlers
     const handleKeyDown = (e: React.KeyboardEvent) => {
         e.preventDefault();
-
         const specialKeys = ['Enter', 'Backspace', 'Tab', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End'];
-
         if (specialKeys.includes(e.key)) {
             runtimeClient.sendInput({ type: 'keypress', key: e.key });
         } else if (e.key.length === 1) {
@@ -124,26 +124,52 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
         <div
             ref={containerRef}
             tabIndex={0}
-            className="w-full h-full bg-white relative overflow-hidden focus:outline-none"
+            className="w-full h-full bg-neutral-50 relative overflow-hidden focus:outline-none"
             onMouseMove={handleMouseMove}
             onClick={handleContainerClick}
             onKeyDown={handleKeyDown}
         >
-            {/* Canvas for streaming - fills container */}
-            <canvas
-                ref={canvasRef}
-                className="w-full h-full"
-            />
+            {/* Canvas for streaming */}
+            <canvas ref={canvasRef} className="w-full h-full" />
 
-            {/* Loading state - only shown briefly */}
-            {!connected && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white">
-                    <div className="flex items-center gap-2 text-neutral-400">
-                        <div className="w-4 h-4 border-2 border-neutral-300 border-t-neutral-500 rounded-full animate-spin"></div>
-                        <span>Loading...</span>
-                    </div>
-                </div>
-            )}
+            {/* Beautiful Loading Overlay */}
+            <AnimatePresence>
+                {!connected && (
+                    <motion.div
+                        initial={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="absolute inset-0 bg-gradient-to-b from-neutral-50 to-neutral-100 flex flex-col items-center justify-center gap-6"
+                    >
+                        {/* Spinning Loader */}
+                        <div className="relative">
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                className="w-12 h-12 rounded-full border-[3px] border-neutral-200 border-t-[#4db7ae]"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-2 h-2 bg-[#4db7ae] rounded-full" />
+                            </div>
+                        </div>
+
+                        {/* Loading Text */}
+                        <div className="text-center">
+                            <p className="text-neutral-600 text-sm font-medium">Connecting to {appName}</p>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-48 h-1 bg-neutral-200 rounded-full overflow-hidden">
+                            <motion.div
+                                className="h-full bg-gradient-to-r from-[#4db7ae] to-[#7dd3c8] rounded-full"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${loadingProgress}%` }}
+                                transition={{ duration: 0.3, ease: "easeOut" }}
+                            />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
