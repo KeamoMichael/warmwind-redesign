@@ -12,10 +12,10 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [connected, setConnected] = useState(false);
     const [latency, setLatency] = useState(0);
-    const hasNavigated = useRef(false); // Prevent double navigation from React strict mode
-    const frameCountRef = useRef(0); // Track frame count for logging
+    const hasNavigated = useRef(false);
+    const frameCountRef = useRef(0);
 
-    // Frame rendering callback - memoized to prevent recreation
+    // Frame rendering callback
     const handleFrame = useCallback((frameData: string) => {
         frameCountRef.current++;
         if (frameCountRef.current === 1 || frameCountRef.current % 50 === 0) {
@@ -36,12 +36,11 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
         }
     }, []);
 
-    // Connection established callback - triggers navigation
+    // Connection established callback
     const handleConnected = useCallback(() => {
         console.log(`🎯 RemoteDesktopView: Connection established for ${appName}`);
         setConnected(true);
 
-        // Navigate to initial URL only once (React strict mode protection)
         if (initialUrl && !hasNavigated.current) {
             hasNavigated.current = true;
             console.log(`🚀 Navigating to: ${initialUrl}`);
@@ -50,11 +49,9 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     }, [appName, initialUrl]);
 
     useEffect(() => {
-        // Connect to runtime with both frame callback AND connection callback
         console.log(`📡 RemoteDesktopView: Initializing connection for ${appName}`);
         runtimeClient.connect(streamUrl, handleFrame, handleConnected);
 
-        // Latency simulation (would be replaced with actual ping measurement)
         const latencyTimer = setInterval(() => {
             setLatency(Math.floor(20 + Math.random() * 10));
         }, 1000);
@@ -87,7 +84,9 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     };
 
     const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault();
         const { x, y } = getScaledCoordinates(e);
+        console.log(`🖱️ Click at (${x}, ${y})`);
         runtimeClient.sendInput({
             type: 'click',
             x,
@@ -96,12 +95,37 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
         });
     };
 
+    // Keyboard input handlers
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        e.preventDefault();
+
+        // Handle special keys
+        const specialKeys = ['Enter', 'Backspace', 'Tab', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End'];
+
+        if (specialKeys.includes(e.key)) {
+            console.log(`⌨️ Special key: ${e.key}`);
+            runtimeClient.sendInput({ type: 'keypress', key: e.key });
+        } else if (e.key.length === 1) {
+            // Regular character
+            console.log(`⌨️ Typing: ${e.key}`);
+            runtimeClient.sendInput({ type: 'type', text: e.key });
+        }
+    };
+
+    // Focus container on click to capture keyboard
+    const handleContainerClick = (e: React.MouseEvent) => {
+        containerRef.current?.focus();
+        handleClick(e);
+    };
+
     return (
         <div
             ref={containerRef}
-            className="w-full h-full bg-black relative overflow-hidden cursor-default"
+            tabIndex={0} // Make div focusable for keyboard events
+            className="w-full h-full bg-black relative overflow-hidden cursor-none focus:outline-none"
             onMouseMove={handleMouseMove}
-            onClick={handleClick}
+            onClick={handleContainerClick}
+            onKeyDown={handleKeyDown}
         >
             {/* Canvas for streaming */}
             <canvas
@@ -109,6 +133,16 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
                 width={1280}
                 height={720}
                 className="w-full h-full object-contain"
+            />
+
+            {/* Custom cursor indicator (follows mouse position in remote) */}
+            <div className="pointer-events-none absolute w-4 h-4 border-2 border-white rounded-full opacity-50"
+                style={{
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    display: 'none' // Hidden for now - agent cursor will replace this
+                }}
             />
 
             {/* Status Overlay */}
