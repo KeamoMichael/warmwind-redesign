@@ -62,8 +62,10 @@ class RuntimeClient {
                         this.frameCallback(message.data);
                     } else if (message.type === 'connected') {
                         console.log(`📡 Session started: ${message.sessionId}`);
+                    } else if (message.type === 'navigated') {
+                        console.log(`🌐 Navigation confirmed by server: ${(message as any).url}`);
                     } else if (message.type === 'error') {
-                        console.error('Runtime error:', message.message);
+                        console.error('❌ Runtime error:', message.message);
                     }
                 } catch (err) {
                     console.error('Failed to parse server message:', err);
@@ -105,7 +107,10 @@ class RuntimeClient {
             return;
         }
 
-        this.socket.send(JSON.stringify({ type: 'navigate', url }));
+        const message = JSON.stringify({ type: 'navigate', url });
+        console.log(`📤 Sending navigate command: ${url} (${message.length} chars)`);
+        this.socket.send(message);
+        console.log(`✅ Navigate command sent to server`);
     }
 
     disconnect() {
