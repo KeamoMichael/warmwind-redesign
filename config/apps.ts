@@ -43,7 +43,7 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         name: "Gmail",
         icon: "/assets/gmail icon.png",
         type: 'remote',
-        url: "https://mail.google.com/mail/mu/mp/",
+        url: "https://mail.google.com",
         width: 900,
         height: 650
     },
@@ -52,7 +52,7 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         name: "Google Docs",
         icon: "/assets/Google_Docs_logo.png",
         type: 'remote',
-        url: "https://docs.google.com/document/u/0/",
+        url: "https://docs.google.com",
         width: 900,
         height: 700
     },
@@ -61,7 +61,7 @@ export const APP_REGISTRY: Record<string, AppManifest> = {
         name: "Google Sheets",
         icon: "/assets/Google_Sheets_Logo.png",
         type: 'remote',
-        url: "https://docs.google.com/spreadsheets/u/0/",
+        url: "https://docs.google.com/spreadsheets",
         width: 900,
         height: 700
     }

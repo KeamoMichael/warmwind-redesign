@@ -11,24 +11,23 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [connected, setConnected] = useState(false);
-    const [latency, setLatency] = useState(0);
     const frameCountRef = useRef(0);
     const currentUrlRef = useRef<string | null>(null);
 
     // Frame rendering callback
     const handleFrame = useCallback((frameData: string) => {
         frameCountRef.current++;
-        if (frameCountRef.current === 1 || frameCountRef.current % 50 === 0) {
-            console.log(`🎬 Frame received: #${frameCountRef.current} (${Math.round(frameData.length / 1024)}KB)`);
-        }
 
         if (canvasRef.current) {
             const ctx = canvasRef.current.getContext('2d');
             if (ctx) {
                 const img = new Image();
                 img.onload = () => {
-                    if (canvasRef.current) {
-                        // Scale image to fill canvas while maintaining aspect ratio
+                    if (canvasRef.current && containerRef.current) {
+                        // Match canvas to container size for perfect fit
+                        const container = containerRef.current;
+                        canvasRef.current.width = container.clientWidth;
+                        canvasRef.current.height = container.clientHeight;
                         ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
                     }
                 };
@@ -42,7 +41,7 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
         console.log(`🎯 RemoteDesktopView: Connection established for ${appName}`);
         setConnected(true);
 
-        // ALWAYS navigate when connection is established (not just first time)
+        // Navigate when connection is established
         if (initialUrl && currentUrlRef.current !== initialUrl) {
             currentUrlRef.current = initialUrl;
             console.log(`🚀 Navigating to: ${initialUrl}`);
@@ -57,18 +56,13 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
 
         runtimeClient.connect(streamUrl, handleFrame, handleConnected);
 
-        const latencyTimer = setInterval(() => {
-            setLatency(Math.floor(20 + Math.random() * 10));
-        }, 1000);
-
         return () => {
             console.log(`🔌 RemoteDesktopView: Cleanup for ${appName}`);
             runtimeClient.disconnect();
-            clearInterval(latencyTimer);
         };
     }, [streamUrl, handleFrame, handleConnected, appName]);
 
-    // Navigate when URL changes (for app switching)
+    // Navigate when URL changes
     useEffect(() => {
         if (connected && initialUrl && currentUrlRef.current !== initialUrl) {
             console.log(`🔄 URL changed, navigating to: ${initialUrl}`);
@@ -82,8 +76,9 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
         if (!containerRef.current || !canvasRef.current) return { x: 0, y: 0 };
 
         const rect = containerRef.current.getBoundingClientRect();
-        const scaleX = canvasRef.current.width / rect.width;
-        const scaleY = canvasRef.current.height / rect.height;
+        // Use 1280x720 as the server viewport size
+        const scaleX = 1280 / rect.width;
+        const scaleY = 720 / rect.height;
 
         return {
             x: Math.floor((e.clientX - rect.left) * scaleX),
@@ -99,7 +94,6 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     const handleClick = (e: React.MouseEvent) => {
         e.preventDefault();
         const { x, y } = getScaledCoordinates(e);
-        console.log(`🖱️ Click at (${x}, ${y})`);
         runtimeClient.sendInput({
             type: 'click',
             x,
@@ -115,10 +109,8 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
         const specialKeys = ['Enter', 'Backspace', 'Tab', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End'];
 
         if (specialKeys.includes(e.key)) {
-            console.log(`⌨️ Special key: ${e.key}`);
             runtimeClient.sendInput({ type: 'keypress', key: e.key });
         } else if (e.key.length === 1) {
-            console.log(`⌨️ Typing: ${e.key}`);
             runtimeClient.sendInput({ type: 'type', text: e.key });
         }
     };
@@ -132,28 +124,26 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
         <div
             ref={containerRef}
             tabIndex={0}
-            className="w-full h-full bg-black relative overflow-hidden cursor-none focus:outline-none"
+            className="w-full h-full bg-white relative overflow-hidden focus:outline-none"
             onMouseMove={handleMouseMove}
             onClick={handleContainerClick}
             onKeyDown={handleKeyDown}
         >
-            {/* Canvas for streaming - use 16:9 aspect ratio */}
+            {/* Canvas for streaming - fills container */}
             <canvas
                 ref={canvasRef}
-                width={1280}
-                height={720}
-                className="w-full h-full object-cover"
+                className="w-full h-full"
             />
 
-            {/* Status Overlay */}
-            <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg text-white text-xs font-mono">
-                <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`}></div>
-                    <span>{connected ? 'Connected' : 'Connecting...'}</span>
-                    {connected && <span className="text-emerald-400">• {latency}ms</span>}
+            {/* Loading state - only shown briefly */}
+            {!connected && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white">
+                    <div className="flex items-center gap-2 text-neutral-400">
+                        <div className="w-4 h-4 border-2 border-neutral-300 border-t-neutral-500 rounded-full animate-spin"></div>
+                        <span>Loading...</span>
+                    </div>
                 </div>
-                <div className="text-gray-400 mt-1">{appName}</div>
-            </div>
+            )}
         </div>
     );
 };
