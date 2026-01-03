@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useInteraction } from '../contexts/InteractionContext';
 import { APP_REGISTRY } from '../config/apps';
 import { AppStoreFloatingDock } from './AppStoreFloatingDock';
@@ -126,36 +126,100 @@ export const AppStore: React.FC<AppStoreProps> = ({ onClose, onInstall, onUninst
                                             key={app.id}
                                             className="bg-white/10 hover:bg-white/15 backdrop-blur-md p-5 rounded-[28px] border border-white/10 flex items-center justify-between group transition-colors"
                                         >
-                                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth="4"
-                                                        />
-                                                        {/* Progress */}
-                                                        <path
-                                                            className="text-teal-400 transition-all duration-100 ease-linear"
-                                                            strokeDasharray={`${progress}, 100`}
-                                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth="4"
-                                                        />
-                                                    </svg>
-                                                    {/* Tiny stop icon in middle */}
-                                                    <div className="absolute w-2.5 h-2.5 bg-teal-400 rounded-sm" />
+                                            <div className="flex items-center gap-5">
+                                                <div className="w-16 h-16 bg-white rounded-2xl p-2.5 shadow-lg flex items-center justify-center shrink-0">
+                                                    <img
+                                                        src={app.icon}
+                                                        alt={app.name}
+                                                        className="w-full h-full object-contain"
+                                                    />
                                                 </div>
-                                            ) : (
-                                                <img
-                                                    src="/assets/download.png"
-                                                    alt="Download"
-                                                    className="w-4 h-4 object-contain"
-                                                />
-                                            )}
-                                        </button>
-                                    </motion.div>
-                                );
-                            })}
-                        </div>
+                                                <span className="text-lg font-medium text-white tracking-wide truncate max-w-[180px]">
+                                                    {app.name}
+                                                </span>
+                                            </div>
+
+                                            {/* Install/Open/Download Button */}
+                                            <button
+                                                id={installButtonId}
+                                                ref={(el) => {
+                                                    if (el && !isInstalled && !isBusy) {
+                                                        registerElement(installButtonId, el, { type: 'button' });
+                                                        return () => unregisterElement(installButtonId);
+                                                    }
+                                                }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (isInstalled && currentView === 'installed') {
+                                                        onUninstall(app.id);
+                                                    } else if (!isInstalled && !isBusy) {
+                                                        handleInstallClick(app.id);
+                                                    }
+                                                }}
+                                                disabled={isBusy || (isInstalled && currentView !== 'installed')}
+                                                className={`w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-90 relative ${isInstalled
+                                                        ? currentView === 'installed' ? 'bg-red-500/20 hover:bg-red-500/40 text-red-400' : 'bg-teal-500/80'
+                                                        : isBusy
+                                                            ? 'bg-transparent'
+                                                            : 'bg-neutral-600/60 hover:bg-neutral-600/80'
+                                                    }`}
+                                            >
+                                                {isInstalled ? (
+                                                    currentView === 'installed' ? (
+                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M3 6h18" />
+                                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                                        </svg>
+                                                    ) : (
+                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                                            <polyline points="20 6 9 17 4 12" />
+                                                        </svg>
+                                                    )
+                                                ) : state === 'detecting' ? (
+                                                    // Hardware Detection Spinner
+                                                    <svg className="animate-spin w-5 h-5 text-white/50" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                ) : state === 'downloading' ? (
+                                                    // Progress Ring
+                                                    <div className="relative w-full h-full flex items-center justify-center">
+                                                        <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
+                                                            {/* Track */}
+                                                            <path
+                                                                className="text-white/10"
+                                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                strokeWidth="4"
+                                                            />
+                                                            {/* Progress */}
+                                                            <path
+                                                                className="text-teal-400 transition-all duration-100 ease-linear"
+                                                                strokeDasharray={`${progress}, 100`}
+                                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                strokeWidth="4"
+                                                            />
+                                                        </svg>
+                                                        {/* Tiny stop icon in middle */}
+                                                        <div className="absolute w-2.5 h-2.5 bg-teal-400 rounded-sm" />
+                                                    </div>
+                                                ) : (
+                                                    <img
+                                                        src="/assets/download.png"
+                                                        alt="Download"
+                                                        className="w-4 h-4 object-contain"
+                                                    />
+                                                )}
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </motion.div>
+                        </AnimatePresence>
                     </div>
                 </div>
 
