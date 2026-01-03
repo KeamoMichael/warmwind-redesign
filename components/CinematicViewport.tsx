@@ -229,6 +229,34 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
 }) => {
   const isAgenticState = activeStepIndex >= 0;
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const viewportRef = React.useRef<HTMLDivElement>(null);
+
+  // Get interaction context for cursor control
+  const { setUserCursorPosition, updateCursor } = useInteraction();
+
+  // Track if mouse is inside OS viewport
+  const [isInsideOS, setIsInsideOS] = React.useState(false);
+
+  // Mouse tracking for agent cursor
+  const handleViewportMouseMove = React.useCallback((e: React.MouseEvent) => {
+    if (viewportRef.current) {
+      const rect = viewportRef.current.getBoundingClientRect();
+      // Clamp cursor to viewport bounds
+      const x = Math.max(rect.left, Math.min(e.clientX, rect.right));
+      const y = Math.max(rect.top, Math.min(e.clientY, rect.bottom));
+      setUserCursorPosition(x, y);
+    }
+  }, [setUserCursorPosition]);
+
+  const handleViewportMouseEnter = React.useCallback(() => {
+    setIsInsideOS(true);
+    updateCursor({ isVisible: true });
+  }, [updateCursor]);
+
+  const handleViewportMouseLeave = React.useCallback(() => {
+    setIsInsideOS(false);
+    updateCursor({ isVisible: false });
+  }, [updateCursor]);
 
   // Drag Scroll Logic
   const [isDragging, setIsDragging] = React.useState(false);
@@ -274,7 +302,13 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
   }, [openApps.length]);
 
   return (
-    <div className="relative w-full h-full rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm">
+    <div
+      ref={viewportRef}
+      className={`relative w-full h-full rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm ${isInsideOS ? 'cursor-none' : ''}`}
+      onMouseMove={handleViewportMouseMove}
+      onMouseEnter={handleViewportMouseEnter}
+      onMouseLeave={handleViewportMouseLeave}
+    >
       {/* Background Image */}
       <img
         src="/assets/Wallpaper For OS.jpg"
