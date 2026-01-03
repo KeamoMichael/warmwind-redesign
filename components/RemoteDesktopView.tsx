@@ -13,9 +13,15 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     const [connected, setConnected] = useState(false);
     const [latency, setLatency] = useState(0);
     const hasNavigated = useRef(false); // Prevent double navigation from React strict mode
+    const frameCountRef = useRef(0); // Track frame count for logging
 
     // Frame rendering callback - memoized to prevent recreation
     const handleFrame = useCallback((frameData: string) => {
+        frameCountRef.current++;
+        if (frameCountRef.current === 1 || frameCountRef.current % 50 === 0) {
+            console.log(`🎬 Frame received: #${frameCountRef.current} (${Math.round(frameData.length / 1024)}KB)`);
+        }
+
         if (canvasRef.current) {
             const ctx = canvasRef.current.getContext('2d');
             if (ctx) {
