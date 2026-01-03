@@ -12,8 +12,8 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [connected, setConnected] = useState(false);
     const [latency, setLatency] = useState(0);
-    const hasNavigated = useRef(false);
     const frameCountRef = useRef(0);
+    const currentUrlRef = useRef<string | null>(null);
 
     // Frame rendering callback
     const handleFrame = useCallback((frameData: string) => {
@@ -28,6 +28,7 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
                 const img = new Image();
                 img.onload = () => {
                     if (canvasRef.current) {
+                        // Scale image to fill canvas while maintaining aspect ratio
                         ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
                     }
                 };
@@ -41,8 +42,9 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
         console.log(`🎯 RemoteDesktopView: Connection established for ${appName}`);
         setConnected(true);
 
-        if (initialUrl && !hasNavigated.current) {
-            hasNavigated.current = true;
+        // ALWAYS navigate when connection is established (not just first time)
+        if (initialUrl && currentUrlRef.current !== initialUrl) {
+            currentUrlRef.current = initialUrl;
             console.log(`🚀 Navigating to: ${initialUrl}`);
             runtimeClient.navigate(initialUrl);
         }
@@ -50,6 +52,9 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
 
     useEffect(() => {
         console.log(`📡 RemoteDesktopView: Initializing connection for ${appName}`);
+        frameCountRef.current = 0;
+        currentUrlRef.current = null;
+
         runtimeClient.connect(streamUrl, handleFrame, handleConnected);
 
         const latencyTimer = setInterval(() => {
@@ -60,9 +65,17 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
             console.log(`🔌 RemoteDesktopView: Cleanup for ${appName}`);
             runtimeClient.disconnect();
             clearInterval(latencyTimer);
-            hasNavigated.current = false;
         };
     }, [streamUrl, handleFrame, handleConnected, appName]);
+
+    // Navigate when URL changes (for app switching)
+    useEffect(() => {
+        if (connected && initialUrl && currentUrlRef.current !== initialUrl) {
+            console.log(`🔄 URL changed, navigating to: ${initialUrl}`);
+            currentUrlRef.current = initialUrl;
+            runtimeClient.navigate(initialUrl);
+        }
+    }, [connected, initialUrl]);
 
     // Scale mouse coordinates to match canvas resolution
     const getScaledCoordinates = (e: React.MouseEvent) => {
@@ -99,20 +112,17 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     const handleKeyDown = (e: React.KeyboardEvent) => {
         e.preventDefault();
 
-        // Handle special keys
         const specialKeys = ['Enter', 'Backspace', 'Tab', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End'];
 
         if (specialKeys.includes(e.key)) {
             console.log(`⌨️ Special key: ${e.key}`);
             runtimeClient.sendInput({ type: 'keypress', key: e.key });
         } else if (e.key.length === 1) {
-            // Regular character
             console.log(`⌨️ Typing: ${e.key}`);
             runtimeClient.sendInput({ type: 'type', text: e.key });
         }
     };
 
-    // Focus container on click to capture keyboard
     const handleContainerClick = (e: React.MouseEvent) => {
         containerRef.current?.focus();
         handleClick(e);
@@ -121,28 +131,18 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     return (
         <div
             ref={containerRef}
-            tabIndex={0} // Make div focusable for keyboard events
+            tabIndex={0}
             className="w-full h-full bg-black relative overflow-hidden cursor-none focus:outline-none"
             onMouseMove={handleMouseMove}
             onClick={handleContainerClick}
             onKeyDown={handleKeyDown}
         >
-            {/* Canvas for streaming */}
+            {/* Canvas for streaming - use 16:9 aspect ratio */}
             <canvas
                 ref={canvasRef}
                 width={1280}
                 height={720}
-                className="w-full h-full object-contain"
-            />
-
-            {/* Custom cursor indicator (follows mouse position in remote) */}
-            <div className="pointer-events-none absolute w-4 h-4 border-2 border-white rounded-full opacity-50"
-                style={{
-                    left: '50%',
-                    top: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    display: 'none' // Hidden for now - agent cursor will replace this
-                }}
+                className="w-full h-full object-cover"
             />
 
             {/* Status Overlay */}
