@@ -28,15 +28,17 @@ class RuntimeClient {
     private socket: WebSocket | null = null;
     private isConnected: boolean = false;
     private frameCallback: ((frameData: string) => void) | null = null;
+    private onConnectedCallback: (() => void) | null = null;
     private reconnectAttempts: number = 0;
     private maxReconnectAttempts: number = 5;
 
-    connect(url?: string, onFrame?: (frameData: string) => void) {
+    connect(url?: string, onFrame?: (frameData: string) => void, onConnected?: () => void) {
         const wsUrl = url || import.meta.env.VITE_RUNTIME_URL || 'ws://localhost:8080';
 
         console.log(`🔌 Connecting to Playwright Runtime at ${wsUrl}...`);
 
         this.frameCallback = onFrame || null;
+        this.onConnectedCallback = onConnected || null;
 
         try {
             this.socket = new WebSocket(wsUrl);
@@ -45,6 +47,11 @@ class RuntimeClient {
                 console.log("✅ Runtime Connected. Stream Ready.");
                 this.isConnected = true;
                 this.reconnectAttempts = 0;
+
+                // Call the onConnected callback if provided
+                if (this.onConnectedCallback) {
+                    this.onConnectedCallback();
+                }
             };
 
             this.socket.onmessage = (event) => {
@@ -75,7 +82,7 @@ class RuntimeClient {
                 if (this.reconnectAttempts < this.maxReconnectAttempts) {
                     this.reconnectAttempts++;
                     console.log(`Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-                    setTimeout(() => this.connect(wsUrl, this.frameCallback || undefined), 2000);
+                    setTimeout(() => this.connect(wsUrl, this.frameCallback || undefined, this.onConnectedCallback || undefined), 2000);
                 }
             };
         } catch (err) {

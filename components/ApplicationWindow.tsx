@@ -22,7 +22,7 @@ export const ApplicationWindow: React.FC<ApplicationWindowProps> = ({ app, onClo
                 zIndex: 10
             }}
         >
-            {/* Window Title Bar */}
+            {/* Window Title Bar - Glassy with simple X close button */}
             <div className="h-11 bg-white/10 backdrop-blur-3xl flex items-center justify-between px-5 shrink-0 border-b border-white/5 select-none">
                 {/* Left: App Logo & Title */}
                 <div className="flex items-center gap-3">
@@ -33,19 +33,26 @@ export const ApplicationWindow: React.FC<ApplicationWindowProps> = ({ app, onClo
                     />
                     <span className="text-[14px] text-white/90 font-medium tracking-tight">{app.name}</span>
                 </div>
-                {/* Right: Window Controls */}
-                <div className="flex items-center gap-2">
-                    {/* Minimize (Visual only) */}
-                    <button className="w-3 h-3 rounded-full bg-yellow-400/80 hover:bg-yellow-400 transition-colors" />
-                    {/* Maximize (Visual only) */}
-                    <button className="w-3 h-3 rounded-full bg-green-400/80 hover:bg-green-400 transition-colors" />
-                    {/* Close */}
-                    <button
-                        onClick={onClose}
-                        className="w-3 h-3 rounded-full bg-red-400/80 hover:bg-red-400 transition-colors flex items-center justify-center group"
+
+                {/* Right: Simple X Close Button (matching ChromeWindow reference) */}
+                <button
+                    onClick={onClose}
+                    className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-full transition-all group"
+                >
+                    <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
+                        className="text-white/40 group-hover:text-white/80 transition-colors"
                     >
-                    </button>
-                </div>
+                        <path
+                            d="M2.5 2.5 L9.5 9.5 M9.5 2.5 L2.5 9.5"
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                            strokeLinecap="round"
+                        />
+                    </svg>
+                </button>
             </div>
 
             {/* Content Area */}
@@ -64,8 +71,6 @@ export const ApplicationWindow: React.FC<ApplicationWindowProps> = ({ app, onClo
                         Content Not Available
                     </div>
                 )}
-
-                {/* Overlay for interaction blocking if needed (not implemented yet) */}
             </div>
         </motion.div>
     );

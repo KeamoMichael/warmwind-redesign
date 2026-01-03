@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { runtimeClient } from '../services/RuntimeClient';
 
 interface RemoteDesktopViewProps {
@@ -13,63 +12,76 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [connected, setConnected] = useState(false);
     const [latency, setLatency] = useState(0);
+    const hasNavigated = useRef(false); // Prevent double navigation from React strict mode
 
-    useEffect(() => {
-        // Connect to runtime with frame callback
-        runtimeClient.connect(streamUrl, (frameData) => {
-            // Render frame to canvas
-            if (canvasRef.current) {
-                const ctx = canvasRef.current.getContext('2d');
-                if (ctx) {
-                    const img = new Image();
-                    img.onload = () => {
-                        ctx.drawImage(img, 0, 0, canvasRef.current!.width, canvasRef.current!.height);
-                    };
-                    img.src = `data:image/jpeg;base64,${frameData}`;
-                }
+    // Frame rendering callback - memoized to prevent recreation
+    const handleFrame = useCallback((frameData: string) => {
+        if (canvasRef.current) {
+            const ctx = canvasRef.current.getContext('2d');
+            if (ctx) {
+                const img = new Image();
+                img.onload = () => {
+                    if (canvasRef.current) {
+                        ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
+                    }
+                };
+                img.src = `data:image/jpeg;base64,${frameData}`;
             }
-        });
+        }
+    }, []);
 
+    // Connection established callback - triggers navigation
+    const handleConnected = useCallback(() => {
+        console.log(`🎯 RemoteDesktopView: Connection established for ${appName}`);
         setConnected(true);
 
-        // Navigate to initial URL if provided
-        if (initialUrl) {
-            // Small delay to ensure connection is established
-            setTimeout(() => {
-                runtimeClient.navigate(initialUrl);
-            }, 500);
+        // Navigate to initial URL only once (React strict mode protection)
+        if (initialUrl && !hasNavigated.current) {
+            hasNavigated.current = true;
+            console.log(`🚀 Navigating to: ${initialUrl}`);
+            runtimeClient.navigate(initialUrl);
         }
+    }, [appName, initialUrl]);
 
-        // Simulate latency monitoring
+    useEffect(() => {
+        // Connect to runtime with both frame callback AND connection callback
+        console.log(`📡 RemoteDesktopView: Initializing connection for ${appName}`);
+        runtimeClient.connect(streamUrl, handleFrame, handleConnected);
+
+        // Latency simulation (would be replaced with actual ping measurement)
         const latencyTimer = setInterval(() => {
             setLatency(Math.floor(20 + Math.random() * 10));
         }, 1000);
 
         return () => {
+            console.log(`🔌 RemoteDesktopView: Cleanup for ${appName}`);
             runtimeClient.disconnect();
             clearInterval(latencyTimer);
+            hasNavigated.current = false;
         };
-    }, [streamUrl, initialUrl]);
+    }, [streamUrl, handleFrame, handleConnected, appName]);
+
+    // Scale mouse coordinates to match canvas resolution
+    const getScaledCoordinates = (e: React.MouseEvent) => {
+        if (!containerRef.current || !canvasRef.current) return { x: 0, y: 0 };
+
+        const rect = containerRef.current.getBoundingClientRect();
+        const scaleX = canvasRef.current.width / rect.width;
+        const scaleY = canvasRef.current.height / rect.height;
+
+        return {
+            x: Math.floor((e.clientX - rect.left) * scaleX),
+            y: Math.floor((e.clientY - rect.top) * scaleY)
+        };
+    };
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (!containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
-        const x = Math.floor(e.clientX - rect.left);
-        const y = Math.floor(e.clientY - rect.top);
-
-        runtimeClient.sendInput({
-            type: 'mousemove',
-            x,
-            y
-        });
+        const { x, y } = getScaledCoordinates(e);
+        runtimeClient.sendInput({ type: 'mousemove', x, y });
     };
 
     const handleClick = (e: React.MouseEvent) => {
-        if (!containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
-        const x = Math.floor(e.clientX - rect.left);
-        const y = Math.floor(e.clientY - rect.top);
-
+        const { x, y } = getScaledCoordinates(e);
         runtimeClient.sendInput({
             type: 'click',
             x,
@@ -81,7 +93,7 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
     return (
         <div
             ref={containerRef}
-            className="w-full h-full bg-black relative overflow-hidden cursor-none"
+            className="w-full h-full bg-black relative overflow-hidden cursor-crosshair"
             onMouseMove={handleMouseMove}
             onClick={handleClick}
         >
@@ -96,7 +108,7 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
             {/* Status Overlay */}
             <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg text-white text-xs font-mono">
                 <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400' : 'bg-red-400'}`}></div>
+                    <div className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`}></div>
                     <span>{connected ? 'Connected' : 'Connecting...'}</span>
                     {connected && <span className="text-emerald-400">• {latency}ms</span>}
                 </div>
