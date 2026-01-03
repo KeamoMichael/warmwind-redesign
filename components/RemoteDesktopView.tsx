@@ -5,9 +5,10 @@ import { runtimeClient } from '../services/RuntimeClient';
 interface RemoteDesktopViewProps {
     appName: string;
     streamUrl?: string;
+    initialUrl?: string;
 }
 
-const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUrl }) => {
+const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUrl, initialUrl }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [connected, setConnected] = useState(false);
@@ -31,6 +32,14 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
 
         setConnected(true);
 
+        // Navigate to initial URL if provided
+        if (initialUrl) {
+            // Small delay to ensure connection is established
+            setTimeout(() => {
+                runtimeClient.navigate(initialUrl);
+            }, 500);
+        }
+
         // Simulate latency monitoring
         const latencyTimer = setInterval(() => {
             setLatency(Math.floor(20 + Math.random() * 10));
@@ -40,7 +49,7 @@ const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ appName, streamUr
             runtimeClient.disconnect();
             clearInterval(latencyTimer);
         };
-    }, [streamUrl]);
+    }, [streamUrl, initialUrl]);
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!containerRef.current) return;

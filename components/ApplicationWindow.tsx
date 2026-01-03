@@ -51,7 +51,7 @@ export const ApplicationWindow: React.FC<ApplicationWindowProps> = ({ app, onClo
             {/* Content Area */}
             <div className="flex-1 bg-white relative">
                 {app.type === 'remote' ? (
-                    <RemoteDesktopView appName={app.name} />
+                    <RemoteDesktopView appName={app.name} initialUrl={app.url} />
                 ) : app.type === 'iframe' && app.url ? (
                     <iframe
                         src={app.url}
