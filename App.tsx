@@ -6,6 +6,7 @@ import { APP_REGISTRY } from './config/apps';
 import { InteractionProvider, useInteraction } from './contexts/InteractionContext';
 import VisualInteractionLayer from './components/VisualInteractionLayer';
 import { useInputController } from './hooks/useInputController';
+import { perceptionService } from './services/PerceptionService';
 
 const AppContent: React.FC = () => {
   const [isResponding, setIsResponding] = React.useState(false);
@@ -37,6 +38,15 @@ const AppContent: React.FC = () => {
     }, 4500);
     return () => clearTimeout(bootTimer);
   }, []);
+
+  // Sync state with PerceptionService for action verification
+  React.useEffect(() => {
+    perceptionService.updateState({
+      installedApps,
+      openApps,
+      activeScreen: openApps.length > 0 ? `app:${openApps[0]}` : 'desktop'
+    });
+  }, [installedApps, openApps]);
 
   const handleCloseApp = (appName: string) => {
     setOpenApps(prev => prev.filter(app => app !== appName));
@@ -227,6 +237,9 @@ const AppContent: React.FC = () => {
           return;
         }
 
+        // === PERCEPTION: Capture state BEFORE action ===
+        const stateBefore = perceptionService.captureState();
+
         switch (app) {
           case "Chrome":
           case "App Store":
@@ -267,10 +280,25 @@ const AppContent: React.FC = () => {
             break;
         }
 
-        // Action Completed
+        // === PERCEPTION: Capture state AFTER action ===
+        // Small delay to let React state update propagate
+        await new Promise(r => setTimeout(r, 100));
+        const stateAfter = perceptionService.captureState();
+
+        // === VERIFICATION: Compare states ===
+        const verification = perceptionService.verifyAction(stateBefore, stateAfter, {
+          type: 'open',
+          target: app
+        });
+
+        // Report ACTUAL result (not assumed success)
         setAgentStatus(null);
         setIsResponding(false);
-        setMessages(prev => [...prev, { role: 'assistant', content: `✅ Action Completed` }]);
+        setMessages(prev => [...prev, { role: 'assistant', content: verification.message }]);
+
+        // Log for debugging
+        console.log('🔍 Perception Verification:', verification);
+
         return; // Skip cycleSteps for physical actions
       }
 
