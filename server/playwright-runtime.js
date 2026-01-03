@@ -56,6 +56,15 @@ wss.on('connection', async (ws) => {
 
         console.log(`✅ Browser launched for session ${sessionId}`);
 
+        // Navigate to a default page to verify browser works
+        try {
+            console.log(`🌐 Auto-navigating to example.com to verify browser...`);
+            await page.goto('https://example.com', { waitUntil: 'domcontentloaded', timeout: 15000 });
+            console.log(`✅ Auto-navigation successful - browser is working`);
+        } catch (navErr) {
+            console.error(`❌ Auto-navigation failed:`, navErr.message);
+        }
+
         ws.send(JSON.stringify({
             type: 'connected',
             sessionId,
