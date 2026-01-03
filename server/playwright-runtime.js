@@ -34,6 +34,81 @@ wss.on('connection', async (ws) => {
     let screenshotInterval = null;
     let isNavigating = false;
 
+    // Queue for messages received before browser is ready
+    const messageQueue = [];
+    let browserReady = false;
+
+    // Register message handler FIRST (before any async work)
+    ws.on('message', async (rawData) => {
+        try {
+            const dataStr = rawData.toString();
+            console.log(`📨 Raw message received (${dataStr.length} chars)`);
+
+            const command = JSON.parse(dataStr);
+            console.log(`📨 Command: ${command.type}`, command.url || '');
+
+            // Queue messages if browser not ready
+            if (!browserReady) {
+                console.log(`⏳ Browser not ready, queuing command: ${command.type}`);
+                messageQueue.push(command);
+                return;
+            }
+
+            await processCommand(command);
+        } catch (err) {
+            console.error('❌ Message handling error:', err.message);
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: err.message
+            }));
+        }
+    });
+
+    // Process a single command
+    async function processCommand(command) {
+        switch (command.type) {
+            case 'navigate':
+                console.log(`🌐 Navigating to ${command.url}...`);
+                isNavigating = true;
+                try {
+                    await page.goto(command.url, {
+                        waitUntil: 'domcontentloaded',
+                        timeout: 30000
+                    });
+                    console.log(`✅ Navigation complete: ${command.url}`);
+                    ws.send(JSON.stringify({ type: 'navigated', url: command.url }));
+                } catch (navErr) {
+                    console.error(`❌ Navigation failed: ${navErr.message}`);
+                    ws.send(JSON.stringify({ type: 'error', message: `Navigation failed: ${navErr.message}` }));
+                } finally {
+                    isNavigating = false;
+                }
+                break;
+
+            case 'click':
+                console.log(`🖱️ Click at (${command.x}, ${command.y})`);
+                await page.mouse.click(command.x, command.y);
+                break;
+
+            case 'mousemove':
+                await page.mouse.move(command.x, command.y);
+                break;
+
+            case 'type':
+                console.log(`⌨️ Typing: ${command.text}`);
+                await page.keyboard.type(command.text);
+                break;
+
+            case 'keypress':
+                console.log(`⌨️ Key: ${command.key}`);
+                await page.keyboard.press(command.key);
+                break;
+
+            default:
+                console.warn('⚠️ Unknown command:', command.type);
+        }
+    }
+
     try {
         // Launch browser with optimized settings
         browser = await chromium.launch({
@@ -56,13 +131,14 @@ wss.on('connection', async (ws) => {
 
         console.log(`✅ Browser launched for session ${sessionId}`);
 
-        // Navigate to a default page to verify browser works
-        try {
-            console.log(`🌐 Auto-navigating to example.com to verify browser...`);
-            await page.goto('https://example.com', { waitUntil: 'domcontentloaded', timeout: 15000 });
-            console.log(`✅ Auto-navigation successful - browser is working`);
-        } catch (navErr) {
-            console.error(`❌ Auto-navigation failed:`, navErr.message);
+        // Browser is now ready - process any queued messages
+        browserReady = true;
+
+        if (messageQueue.length > 0) {
+            console.log(`📬 Processing ${messageQueue.length} queued commands...`);
+            for (const cmd of messageQueue) {
+                await processCommand(cmd);
+            }
         }
 
         ws.send(JSON.stringify({
@@ -78,7 +154,7 @@ wss.on('connection', async (ws) => {
                 try {
                     const screenshot = await page.screenshot({
                         type: 'jpeg',
-                        quality: 85 // Higher quality for better fidelity
+                        quality: 85
                     });
 
                     ws.send(JSON.stringify({
@@ -94,66 +170,7 @@ wss.on('connection', async (ws) => {
                     // Page might be navigating, ignore
                 }
             }
-        }, 66); // ~15 FPS for smoother experience
-
-        // Handle incoming commands
-        ws.on('message', async (rawData) => {
-            try {
-                const dataStr = rawData.toString();
-                console.log(`📨 Raw message received (${dataStr.length} chars)`);
-
-                const command = JSON.parse(dataStr);
-                console.log(`📨 Command: ${command.type}`, command.url || command.x || '');
-
-                switch (command.type) {
-                    case 'navigate':
-                        console.log(`🌐 Navigating to ${command.url}...`);
-                        isNavigating = true;
-                        try {
-                            await page.goto(command.url, {
-                                waitUntil: 'domcontentloaded',
-                                timeout: 30000
-                            });
-                            console.log(`✅ Navigation complete: ${command.url}`);
-                            ws.send(JSON.stringify({ type: 'navigated', url: command.url }));
-                        } catch (navErr) {
-                            console.error(`❌ Navigation failed: ${navErr.message}`);
-                            ws.send(JSON.stringify({ type: 'error', message: `Navigation failed: ${navErr.message}` }));
-                        } finally {
-                            isNavigating = false;
-                        }
-                        break;
-
-                    case 'click':
-                        console.log(`🖱️ Click at (${command.x}, ${command.y})`);
-                        await page.mouse.click(command.x, command.y);
-                        break;
-
-                    case 'mousemove':
-                        await page.mouse.move(command.x, command.y);
-                        break;
-
-                    case 'type':
-                        console.log(`⌨️ Typing: ${command.text}`);
-                        await page.keyboard.type(command.text);
-                        break;
-
-                    case 'keypress':
-                        console.log(`⌨️ Key: ${command.key}`);
-                        await page.keyboard.press(command.key);
-                        break;
-
-                    default:
-                        console.warn('⚠️ Unknown command:', command.type);
-                }
-            } catch (err) {
-                console.error('❌ Message handling error:', err.message);
-                ws.send(JSON.stringify({
-                    type: 'error',
-                    message: err.message
-                }));
-            }
-        });
+        }, 66); // ~15 FPS
 
     } catch (err) {
         console.error('❌ Browser launch failed:', err);
