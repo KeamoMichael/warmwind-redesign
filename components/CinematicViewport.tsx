@@ -342,9 +342,7 @@ const CinematicViewport: React.FC<CinematicViewportProps> = ({
                 }}
                 className="shrink-0 snap-center"
               >
-                {appName === "Chrome" ? (
-                  <ChromeWindow onClose={() => onCloseApp("Chrome")} />
-                ) : appName === "App Store" ? (
+                {appName === "App Store" ? (
                   <AppStore
                     onClose={() => onCloseApp("App Store")}
                     onInstall={onInstallApp}
